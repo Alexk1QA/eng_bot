@@ -1,6 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
-global butt_dict_1
 
 button_test_1 = KeyboardButton("Test")
 keyboard_Test_1 = ReplyKeyboardMarkup(resize_keyboard=True).add(button_test_1)
@@ -11,70 +10,54 @@ keyboard_Choose_Continue = ReplyKeyboardMarkup(resize_keyboard=True).add(button_
 
 status = 1
 butt_dict = {
-        "1": "1",
-        "2": "2",
-        "3": "3",
-        "4": "4",
-        "5": "5",
-        "6": "6",
-        "7": "7",
-        "8": "8",
-        "9": "9",
-        "0": "0"
+        "1": "За посл неделю ",
+        "2": "За все время ",
+        "3": "рус --> англ ",
+        "4": "англ --> рус "
 }
 
 butt_dict_upd = {
-        "1": "1",
-        "2": "2",
-        "3": "3",
-        "4": "4",
-        "5": "5",
-        "6": "6",
-        "7": "7",
-        "8": "8",
-        "9": "9",
-        "0": "0"
+         "1": "За посл неделю ",
+         "2": "За все время ",
+         "3": "рус --> англ ",
+         "4": "англ --> рус "
 }
 
 
 def update_keyboard_secondary(button, dict_):
-    """Доп функция для динамического изменения инлайн кнопок
-       Тут мы перезаписываем второй словарь и делаем проверку на кнопки 2, 3, 4, 5,
-       что они отмечены в правильном порядке
-    """
+    """ Доп функция для динамического изменения инлайн кнопок
+       Тут мы перезаписываем второй словарь """
 
     global butt_dict_upd, status, butt_dict
-
 
     done = "✅"
     butt_dict_1_1 = {}
 
-    for i in dict_:
-        if int(i) == int(button):
-            if len(dict_[i]) == 1:
-                butt_dict_1_1.update({f"{i}": f"{i} {done}"})
-            elif len(dict_[i]) > 1:
-                butt_dict_1_1.update({f"{i}": f"{i}"})
+    for i in dict_.items():
+        # match int(i[0]):
+        if int(i[0]) == int(button):
+            # case int(buttton):
+            match i[1][-1]:
+                case " ":
+                        butt_dict_1_1.update({f"{i[0]}": f"{i[1]}{done}"})
+                case "✅":
+                        butt_dict_1_1.update({f"{i[0]}": f"{i[1][0:-1]} "})
         else:
-            butt_dict_1_1.update({f"{i}": f"{dict_[i]}"})
+            butt_dict_1_1.update({f"{i[0]}": f"{i[1]}"})
 
-    if int(button) == 3 or int(button) == 5:
-        if len(butt_dict[f"{button}"]) == 1:
-            if len(butt_dict[f"{int(button) - 1}"]) == 1:
-                butt_dict_1_1.update({f"{int(button) - 1}": f"{int(button) - 1} {done}"})
+    match int(button):
 
-        if len(butt_dict_upd[f"{button}"]) == 1:
-            if len(butt_dict_upd[f"{int(button) - 1}"]) == 1:
-                butt_dict_1_1.update({f"{int(button) - 1}": f"{int(button) - 1} {done}"})
+        case int(1):
+            butt_dict_1_1.update({"2": "За посл неделю "})
 
-    elif int(button) == 2 or int(button) == 4:
-        if len(butt_dict[f"{button}"]) > 1:
-            if len(butt_dict[f"{int(button) + 1}"]) > 1:
-                butt_dict_1_1.update({f"{int(button) + 1}": f"{int(button) + 1}"})
+        case int(2):
+            butt_dict_1_1.update({"1": "За все время "})
 
-        if len(butt_dict_upd[f"{button}"]) > 1:
-            if len(butt_dict_upd[f"{int(button) + 1}"]) > 1:
-                butt_dict_1_1.update({f"{int(button) + 1}": f"{int(button) + 1}"})
+        case int(3):
+            butt_dict_1_1.update({"4": "англ --> рус "})
+
+        case int(4):
+            butt_dict_1_1.update({"3": "рус --> англ "})
 
     if status == 1:
         butt_dict_upd = butt_dict_1_1
@@ -108,35 +91,18 @@ def keyboard_choose():
         inline_button_2 = InlineKeyboardButton(text=f"{butt_dict['2']}", callback_data=f"inline_button_2")
         inline_button_3 = InlineKeyboardButton(text=f"{butt_dict['3']}", callback_data=f"inline_button_3")
         inline_button_4 = InlineKeyboardButton(text=f"{butt_dict['4']}", callback_data=f"inline_button_4")
-        inline_button_5 = InlineKeyboardButton(text=f"{butt_dict['5']}", callback_data=f"inline_button_5")
-        inline_button_6 = InlineKeyboardButton(text=f"{butt_dict['6']}", callback_data=f"inline_button_6")
-        inline_button_7 = InlineKeyboardButton(text=f"{butt_dict['7']}", callback_data=f"inline_button_7")
-        inline_button_8 = InlineKeyboardButton(text=f"{butt_dict['8']}", callback_data=f"inline_button_8")
-        inline_button_9 = InlineKeyboardButton(text=f"{butt_dict['9']}", callback_data=f"inline_button_9")
-        inline_button_0 = InlineKeyboardButton(text=f"1{butt_dict['0']}", callback_data=f"inline_button_0")
 
-        inline_keyboard_choose = InlineKeyboardMarkup(row_width=3).add(inline_button_1, inline_button_2,
-                                                                       inline_button_3, inline_button_4,
-                                                                       inline_button_5, inline_button_6,
-                                                                       inline_button_7, inline_button_8,
-                                                                       inline_button_9, inline_button_0)
+        inline_keyboard_choose = InlineKeyboardMarkup(row_width=2).add(inline_button_1, inline_button_2,
+                                                                       inline_button_3, inline_button_4)
     elif status == 0:
         inline_button_1 = InlineKeyboardButton(text=f"{butt_dict_upd['1']}", callback_data=f"inline_button_1")
         inline_button_2 = InlineKeyboardButton(text=f"{butt_dict_upd['2']}", callback_data=f"inline_button_2")
         inline_button_3 = InlineKeyboardButton(text=f"{butt_dict_upd['3']}", callback_data=f"inline_button_3")
         inline_button_4 = InlineKeyboardButton(text=f"{butt_dict_upd['4']}", callback_data=f"inline_button_4")
-        inline_button_5 = InlineKeyboardButton(text=f"{butt_dict_upd['5']}", callback_data=f"inline_button_5")
-        inline_button_6 = InlineKeyboardButton(text=f"{butt_dict_upd['6']}", callback_data=f"inline_button_6")
-        inline_button_7 = InlineKeyboardButton(text=f"{butt_dict_upd['7']}", callback_data=f"inline_button_7")
-        inline_button_8 = InlineKeyboardButton(text=f"{butt_dict_upd['8']}", callback_data=f"inline_button_8")
-        inline_button_9 = InlineKeyboardButton(text=f"{butt_dict_upd['9']}", callback_data=f"inline_button_9")
-        inline_button_0 = InlineKeyboardButton(text=f"1{butt_dict_upd['0']}", callback_data=f"inline_button_0")
 
-        inline_keyboard_choose = InlineKeyboardMarkup(row_width=3).add(inline_button_1, inline_button_2,
-                                                                       inline_button_3, inline_button_4,
-                                                                       inline_button_5, inline_button_6,
-                                                                       inline_button_7, inline_button_8,
-                                                                       inline_button_9, inline_button_0)
+
+        inline_keyboard_choose = InlineKeyboardMarkup(row_width=2).add(inline_button_1, inline_button_2,
+                                                                       inline_button_3, inline_button_4)
     return inline_keyboard_choose
 
 

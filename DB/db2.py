@@ -3,7 +3,7 @@ import sqlite3
 
 
 def data_base(wodr_rus, wodr_eng):
-    connect = sqlite3.connect('eng_bot.accdb')
+    connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
     cursor = connect.cursor()
 
     cursor.execute(f'''CREATE TABLE IF NOT EXISTS words

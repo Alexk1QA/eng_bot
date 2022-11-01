@@ -3,7 +3,12 @@ import sqlite3
 
 def add_words(dict):
 
+
+
      car_models = db2.DB([f"words", "rus_name", "eng_name", "", ""])
+
+     "/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb"
+
      car_models.create_sm()
      car_models.insert_data(dict)
 
@@ -20,3 +25,14 @@ a = {'name': 'Яблоко', 'value': 'Apple'}
 #           name TEXT
 #           )''')
 # connect.commit()
+
+dict_word = {
+     "rus": "",
+     "eng": ""
+}
+a = 2
+# print(dict_word)
+# print(a)
+
+
+

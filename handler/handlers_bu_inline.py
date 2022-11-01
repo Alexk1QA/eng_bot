@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery
 async def manual(call: CallbackQuery):
     numb_buttom = call.data[-1]
 
-    actual_dict_param = update_keyboard_main(numb_buttom)
+    update_keyboard_main(numb_buttom)
 
     await bot.answer_callback_query(call.id, text='Изменения внесены')
 
