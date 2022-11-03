@@ -1,5 +1,9 @@
-from DB import db2
+
 import sqlite3
+from pprint import pprint
+import random
+import  time
+from DB import db2
 
 def add_words(dict):
 
@@ -9,8 +13,7 @@ def add_words(dict):
 
      "/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb"
 
-     car_models.create_sm()
-     car_models.insert_data(dict)
+
 
 a = {'name': 'Яблоко', 'value': 'Apple'}
 
@@ -27,12 +30,21 @@ a = {'name': 'Яблоко', 'value': 'Apple'}
 # connect.commit()
 
 
-connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
-cursor = connect.cursor()
+# connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
+# cursor = connect.cursor()
 
-cursor.execute(f"""SELECT * FROM words""")
-result = cursor.fetchall()
-# print(result)
+# cursor.execute(f"""SELECT * FROM words""")
+# result = cursor.fetchall()
+#
+# aa = random.choice(result)
+
+metod = "word"
+phraze = "phrase"
+
+# words = db2.DB(phraze)
+# print(words.select_data())
+
+
 
 butt_dict = {
         "1": "За посл неделю ",
@@ -109,15 +121,31 @@ def update_dict_2(button, dict_):
 
 
 
-b = 6
-
-match b:
-     case int() if b > 5:
-          print("4")
-
-if b > 5:
-     print("4")
 
 
+# d = time.ctime()
+
+# print(d)
+
+
+
+# def new_func_procents():
+
+#      cortezh = [('Яблоко', 'Apple', 'Thu Nov  3 13:18:53 2022'),
+#       ('qeweqwewqewqewqewqeqwe', 'wqewqeqre23432432423423',
+#        'Thu Nov  3 13:57:55 2022'), ('1', '2', 'Thu Nov  3 13:58:32 2022'),
+#         ('qqq', 'wwww', 'Thu Nov  3 14:06:47 2022')]
+
+
+#       random_word = random.choice(result)
+
+
+
+param_fails = 47
+
+
+question = 10
+
+answer = 4
 
 

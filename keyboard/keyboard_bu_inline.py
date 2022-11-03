@@ -10,9 +10,9 @@ keyboard_Choose_Continue = ReplyKeyboardMarkup(resize_keyboard=True).add(button_
 
 status = 1
 butt_dict = {
-        "1": "За посл неделю ",
+        "1": "За посл неделю ✅",
         "2": "За все время ",
-        "3": "рус --> англ ",
+        "3": "рус --> англ ✅",
         "4": "англ --> рус "
 }
 
