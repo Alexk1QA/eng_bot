@@ -27,7 +27,6 @@ def chose_random_():
     for i in keyboard_choose()["inline_keyboard"]:
         for j in i:
             if j["text"][-1].startswith('✅'):
-                print(["text"])
                 actual_dict_param.append(j["callback_data"][-1])
 
     return actual_dict_param
@@ -97,5 +96,5 @@ def random_question(metod):
 #
 # print(random_word[0])
 
-metod = "word"
-(print(random_question(metod)))
+# metod = "word"
+# (print(random_question(metod)))

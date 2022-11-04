@@ -15,10 +15,7 @@ print(actual_percent)
 a = 3
 d = 2
 
-if a == 3:
-    while True:
-        b = int(input("Enter num :"))
 
-        if b == a:
-            break
-print("---")
+aa = 66.66666666666666
+
+print(str(aa)[0:5])
