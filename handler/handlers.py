@@ -8,8 +8,6 @@ from func.func_bu import *
 from bot_init import bot
 from DB import db2
 
-# from keyboard.keyboard_bu_inline import *
-
 
 async def add_word(message: types.Message, state: FSMContext):
     """ Начинаем машину состояния и спрашиваем первое слово или фразу """
@@ -128,8 +126,15 @@ async def start_test(message: types.Message, state: FSMContext):
                        reply_markup=keyboard_start_.create_keyboadr())
     await bot.delete_message(message.chat.id, message.message_id)
 
+
+    print("---")
+    button = 2
+    keyboard_2 = INLINE_KEYBOARD(message.from_user.id)
     await bot.send_message(message.from_user.id, f"start_test {handlers_dict[f'start_test_word']}",
-                           reply_markup=keyboard_choose())
+                           reply_markup=keyboard_2.update_keyboard_main(button))
+
+    # await bot.send_message(message.from_user.id, f"start_test {handlers_dict[f'start_test_word']}",
+    #                        reply_markup=keyboard_choose())
 
 
 

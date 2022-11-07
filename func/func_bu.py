@@ -1,12 +1,22 @@
 from keyboard.keyboard_bu_inline import *
-from dotenv import load_dotenv
+from DB import db2
 import sqlite3
 import random
 
 
-from DB import db2
+def message_(list_):
+    """ Функция для формирования сообщения списка с неверными словами """
 
-load_dotenv()
+    message_out = "\n\n"
+    count_word = 1
+
+    for i in list_:
+        a = f"{count_word} - {i[0][0]} / {i[0][1]}. Вы ввели - {i[1]}"
+        message_out = f"{message_out + a} \n"
+        count_word += 1
+
+    return message_out
+
 
 def chose_random_():
     """ Данная функция формирует список после ввода юзером настроек для вывода теста
@@ -74,19 +84,8 @@ def random_question(metod, id):
             # return_list -->[3, [['Яблоко', 'Apple']]
 
 
-metod = "word"
-id = "id_476610055"
-(print(random_question(metod, id)))
+# metod = "word"
+# id = "id_476610055"
+# (print(random_question(metod, id)))
 
-def message_(list_):
-    """ Функция для формирования сообщения списка с неверными словами """
 
-    message_out = "\n\n"
-    count_word = 1
-
-    for i in list_:
-        a = f"{count_word} - {i[0][0]} / {i[0][1]}. Вы ввели - {i[1]}"
-        message_out = f"{message_out + a} \n"
-        count_word += 1
-
-    return message_out

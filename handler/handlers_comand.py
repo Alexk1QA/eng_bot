@@ -1,10 +1,8 @@
 from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher import FSMContext
 from aiogram import types, Dispatcher
 from message import message_handlers
 from keyboard.keyboard import *
 from bot_init import bot
-
 from DB import db2
 
 

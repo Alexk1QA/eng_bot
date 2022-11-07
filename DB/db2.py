@@ -5,15 +5,14 @@ connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
 cursor = connect.cursor()
 
 
-
 class DB:
-    def __init__(self, id):
+    def __init__(self, id_user):
 
-        self.id = id
+        self.id_user = id_user
 
     def create_table(self):
 
-        cursor.execute(f'''CREATE TABLE IF NOT EXISTS {self.id}(
+        cursor.execute(f'''CREATE TABLE IF NOT EXISTS {self.id_user}(
                                          id INTEGER PRIMARY KEY autoincrement,
                                          word_rus TEXT,
                                          word_eng TEXT,
@@ -31,19 +30,19 @@ class DB:
         time_ = time.ctime()
 
         cursor.execute(
-            f"INSERT INTO {self.id} ({f'{metod}_rus'}, {f'{metod}_eng'}, {f'{metod}_time_add'})"
+            f"INSERT INTO {self.id_user} ({f'{metod}_rus'}, {f'{metod}_eng'}, {f'{metod}_time_add'})"
             f"VALUES ( ?, ?, ?)", (data_rus, data_eng, time_))
         connect.commit()
 
     def insert_settings(self, param_questions, param_percent):
 
         cursor.execute(
-            f"INSERT INTO {self.id} (param_questions, param_percent)"
+            f"INSERT INTO {self.id_user} (param_questions, param_percent)"
             f"VALUES ( ?, ?)", (param_questions, param_percent))
         connect.commit()
 
     def select_data(self, column_):
-        cursor.execute(f"""SELECT {column_} FROM {self.id}""")
+        cursor.execute(f"""SELECT {column_} FROM {self.id_user}""")
 
         result = cursor.fetchall()
         return result

@@ -1,13 +1,10 @@
+.idea
+.env
 __pycache__
 /venv
 vent
 tasks.py
 tasks
-test_req_category.py
-test_req_category
-testtttt.py
-testtttt
 need_work.rtf
-__pycache__
 test.py
 Нужно сделать.rtf
