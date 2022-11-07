@@ -3,6 +3,6 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/DB/db2.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/DB/test.py" dialect="GenericSQL" />
-    <file url="file://$PROJECT_DIR$/handler/handlers.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/func/func_bu.py" dialect="GenericSQL" />
   </component>
 </project>

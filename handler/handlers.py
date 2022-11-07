@@ -1,20 +1,14 @@
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
-from aiogram import types, Dispatcher
-
-# import DB.db2
-from keyboard.keyboard import *
-from state.states import * 
-from bot_init import bot
-from func.func_bu import *
-
-
-
 from message.message_handlers import *
-# from DB.db2 import *
+from aiogram import types, Dispatcher
+from keyboard.keyboard import *
+from state.states import *
+from func.func_bu import *
+from bot_init import bot
 from DB import db2
-from keyboard.keyboard_bu_inline import *
-from aiogram.types import CallbackQuery
+
+# from keyboard.keyboard_bu_inline import *
 
 
 async def add_word(message: types.Message, state: FSMContext):
@@ -22,35 +16,17 @@ async def add_word(message: types.Message, state: FSMContext):
 
     answer = message.text
 
-    dict_param = {
-        "method": "",
-        "rus": "",
-        "eng": "",
-
-        "temp_translate": "",
-        "status": "",
-
-        "temp_method": "",
-        "param_questions": "",
-        "param_percent": "",
-        "count_fails": "",
-        "count_questions": ""
-    }
-    await state.update_data(dict_param)
-    
     match answer:
         case "Добавить слово ->":
-            await state.update_data(
-                    {"method": "word"})
+            await state.update_data(method_add_data="word")
 
         case "Добавить фразу ->":
-            await state.update_data(
-                    {"method": "phrase"})
-    
-    data = await state.get_data()
-    method = data.get("method")
+            await state.update_data(method_add_data="phrase")
 
-    await bot.send_message(message.from_user.id, f"add_word {handlers_dict[f'add_{method}_first']}")
+    state_data = await state.get_data()
+    method_add_data = state_data["method_add_data"]
+
+    await bot.send_message(message.from_user.id, f"add_word {handlers_dict[f'add_{method_add_data}_first']}")
     await bot.delete_message(message.chat.id, message.message_id)
 
     await QuestionParams.add_word_first.set()
@@ -61,13 +37,12 @@ async def add_word_first(message: types.Message, state: FSMContext):
 
     answer = message.text
 
-    await state.update_data(
-            {"rus": answer})
+    await state.update_data(rus_add_data=answer)
 
-    data = await state.get_data()
-    method = data.get("method")
+    state_data = await state.get_data()
+    method_add_data = state_data["method_add_data"]
 
-    await bot.send_message(message.from_user.id, f"add_word_first {handlers_dict[f'add_{method}_last']}")
+    await bot.send_message(message.from_user.id, f"add_word_first {handlers_dict[f'add_{method_add_data}_last']}")
 
     await QuestionParams.add_word_last.set()
 
@@ -77,33 +52,30 @@ async def add_word_last(message: types.Message, state: FSMContext):
 
     answer = message.text
 
-    await state.update_data(
-            {"eng": answer})
+    await state.update_data(eng_add_data=answer)
 
-    data = await state.get_data()
+    state_data = await state.get_data()
 
     # В этом участке кода я буду делать запись в базу
-    wodr_rus = data.get("rus")
-    wodr_eng = data.get("eng")
-    method = data.get("method")
+    rus_add_data = state_data["rus_add_data"]
+    eng_add_data = state_data["eng_add_data"]
+    method_add_data = state_data["method_add_data"]
 
-    # data_base(wodr_rus,wodr_eng)
-    create_table = db2.DB(method)
-    create_table.create_table()
-    create_table.insert_data(wodr_rus, wodr_eng)
+    create_table = db2.DB(f"id_{message.from_user.id}")
+    create_table.insert_data(method_add_data, rus_add_data, eng_add_data)
 
     button = ["Нет", "Да"]
     keyboard_quit = Keyboard(button)
-    
-    await bot.send_message(message.from_user.id, f"add_word_replay Пара {wodr_rus} - {wodr_eng} была добавлена\n"
-                                                f"{handlers_dict[f'add_{method}_quit']}",
+
+    await bot.send_message(message.from_user.id, f"add_word_replay Пара {rus_add_data} - {eng_add_data} была добавлена\n"
+                                                f"{handlers_dict[f'add_{method_add_data}_quit']}",
                                 reply_markup=keyboard_quit.create_keyboadr())
 
     await QuestionParams.add_word_quit.set()
 
 
 async def add_word_quit(message: types.Message, state: FSMContext):
-    """ Или возвращаемся на начало или выводим на главное меню """
+    """ Спрашиваем повторно ввод данных за ввод или переводм на главное меню """
 
     answer = message.text
 
@@ -120,40 +92,35 @@ async def add_word_quit(message: types.Message, state: FSMContext):
             await bot.delete_message(message.chat.id, message.message_id)
 
         case "Да":
-            data = await state.get_data()
-            method = data.get("method")
+            state_data = await state.get_data()
+            method_add_data = state_data["method_add_data"]
 
-            await bot.send_message(message.from_user.id, f"{handlers_dict[f'add_{method}_first']}",
+            await bot.send_message(message.from_user.id, f"{handlers_dict[f'add_{method_add_data}_first']}",
                                 reply_markup=types.ReplyKeyboardRemove())
 
             await QuestionParams.add_word_first.set()
 
 
 async def start_test(message: types.Message, state: FSMContext):
-    """ Записываем первое слово или фразу и спрашиваем второе """
+    """ Начало машины состояния """
 
     answer = message.text
 
-    await state.update_data(
-        {"param_questions": 3})
-    await state.update_data(
-        {"param_percent": 75})
-    await state.update_data(
-        {"count_fails": 0})
-    await state.update_data(
-        {"count_questions": 0})
-    await state.update_data(
-        {"status": 0})
+    create_table = db2.DB(f"id_{message.from_user.id}")
+    create_table.create_table()
 
+    param_questions = "param_questions"
+    param_percent = "param_percent"
 
+    await state.update_data(param_questions=int(create_table.select_data(param_questions)[0][0]))
+    await state.update_data(param_percent=int(create_table.select_data(param_percent)[0][0]))
+    await state.update_data(count_fails=0)
+    await state.update_data(count_questions=0)
+    await state.update_data(status_=0)
 
-    await state.update_data(
-                    {"temp_method": answer})
+    await state.update_data(temp_method=answer)
 
-
-    data = await state.get_data()
-    temp_method = data.get("temp_method")
-    print(temp_method)
+    await state.update_data(list_fails=[])
 
     button = ["Начать ->"]
     keyboard_start_ = Keyboard(button)
@@ -165,241 +132,189 @@ async def start_test(message: types.Message, state: FSMContext):
                            reply_markup=keyboard_choose())
 
 
+
+
 async def question_test(message: types.Message, state: FSMContext):
     """ Тут мы сортируем слова по сроку который указал пользователь и вариант отображения слов
          1 - За посл неделю, 2 - За все время, 3 - рус --> англ, 4 - англ --> рус """
 
     answer = message.text
 
-    data = await state.get_data()
-    temp_method = data.get("temp_method")
+    state_data = await state.get_data()
 
-    param_questions = int(data.get("param_questions"))
-    param_percent = int(data.get("param_percent"))
-    count_fails = int(data.get("count_fails"))
-    count_questions = int(data.get("count_questions"))
-    print("--- --- ---")
+    param_questions = int(state_data["param_questions"])
+    param_percent = int(state_data["param_percent"])
+    count_fails = int(state_data["count_fails"])
+    count_questions = int(state_data["count_questions"])
+    status_ = int(state_data["status_"])
 
-    temp_para = data.get("temp_para")
-    temp_translate = data.get("temp_translate")
+    temp_method = state_data["temp_method"]
 
-    status = int(data.get("status"))
-
-    list_para = []
-    list_fails = []
-
-    match status:
+    match status_:
         case 0:
             pass
 
         case 1:
-            print(temp_translate)
-            print(answer)
+            origin_para = state_data["origin_para"]
+            question_state = state_data["question_state"]
+            answer_state = state_data["answer_state"]
+            list_fails = state_data["list_fails"]
+
             if count_questions < param_questions:
-                if answer == "Начать ->":
-                    # await bot.answer_callback_query(call.id, text='Правильно')
-                    # await call.message.edit_reply_markup()
+
+                if str(answer) == str(answer_state):
                     pass
 
-                elif str(answer) == str(temp_translate):
-                    pass
+                elif str(answer) != str(answer_state):
 
-                elif str(answer) != str(temp_translate):
                     count_fails += 1
-                    await state.update_data(
-                        {"count_fails": count_fails})
-                    list_fails.append(temp_translate)
-                    list_para.append(temp_para)
-                    print(list_fails, list_para)
+                    await state.update_data(count_fails=count_fails)
+                    list_fails_ = [origin_para, answer]
+                    list_fails.append(list_fails_)
+
+                    await state.update_data(list_fails=list_fails)
 
             else:
-                count_fails += 1
-                await state.update_data(
-                    {"count_fails": count_fails})
-                print("2 else")
-                # Вызываем функцию для определения %
-                # Пишем, сообщение - Правильный перевод такой - Ваш такой
+                if str(answer) == str(answer_state):
+                    pass
 
-                # ((75 / 100) * 10 ) - 10 = 2.5
+                elif str(answer) != str(answer_state):
+
+                    count_fails += 1
+                    await state.update_data(count_fails=count_fails)
+
+                    list_fails_ = [origin_para, answer]
+                    list_fails.append(list_fails_)
+                    await state.update_data(list_fails=list_fails)
+
+                max_percent_fails = 100 - param_questions
+                # Вычисляем минимальный % для определения прохождения теста.
+                # Пример: 100 - 70 - доступно для ошибок 30 %
+
                 actual_percent = (count_fails / param_questions) * 100
+                # Пример 3/10  * 100 = 30 %
 
-                if actual_percent > param_percent:
+                if count_fails == 0:
+
                     await bot.send_message(message.from_user.id,
-                                           f"Тест пройден. Ваш процент ответов - {str(actual_percent)[0:5]}%")
+                                           f"Тест пройден. Ваш процент ответов - 100%")
 
-                    await bot.send_message(message.from_user.id, f"Слова в которых допускались ошибки: "
-                                                                 f"{list_fails}, {list_para}")
+                else:
+                    if actual_percent > max_percent_fails:
 
-                    await state.finish()
+                        list_fails = state_data["list_fails"]
 
+                        await bot.send_message(message.from_user.id,
+                                               f"Тест НЕ пройден. Ваш процент ответов - "
+                                               f"{str(100 - int(actual_percent))[0:5]}%")
 
-                elif actual_percent < param_percent:
-                    await bot.send_message(message.from_user.id,
-                                           f"Тест НЕ пройден. Ваш процент ответов - {str(actual_percent)[0:5]}%")
+                        await bot.send_message(message.from_user.id, f"Слова в которых допускались ошибки: "
+                                                                     f"{message_(list_fails)}")
 
-                    await bot.send_message(message.from_user.id, f"Слова в которых допускались ошибки: "
-                                                                 f"{list_fails}, {list_para}")
+                        await state.finish()
 
-                    await state.finish()
+                    elif actual_percent <= max_percent_fails:
+                        await bot.send_message(message.from_user.id, f"Тест пройден. Ваш процент ответов - "
+                                                                     f"{str(100 - int(actual_percent))[0:5]}%")
 
+                        await bot.send_message(message.from_user.id, f"Слова в которых допускались ошибки: "
+                                                                     f"{message_(list_fails)}")
+
+                        await state.finish()
+
+    # Вывод на главное меню после последнего вопроса
     if count_questions == param_questions:
         button = ["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
                   "Пройти тест: фразы ->", "Повторение ->", "Настройки ->",
                   "Яблоко", "Apple"]
         keyboard_start = Keyboard(button)
+
         await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                reply_markup=keyboard_start.create_keyboadr())
-        pass
+
     else:
         match temp_method:
             case "Пройти тест: слова ->":
-                data_ = random_question("word")
-# example data_ --> [2, ('Яблоко', 'Apple', 'Thu Nov  3 14:03:26 2022'), ('3333', '44444', 'Thu Nov  3 14:56:17 2022')]
+                data_ = random_question("word", f"id_{message.from_user.id}")
+                # example data_ --> # [3, ['Яблоко', 'Apple']]
 
                 match data_[0]:
                     case int(3):
+                        # "3": "рус --> англ "
                         await bot.send_message(message.from_user.id, f"Как переводится слово {data_[1][0]}")
-                        await state.update_data(
-                            {"temp_translate": data_[1][1]})
+
+                        await state.update_data(origin_para=data_[1])
+                        await state.update_data(question_state=data_[1][0])
+                        await state.update_data(answer_state=data_[1][1])
+
                         count_questions += 1
-                        await state.update_data(
-                            {"count_questions": count_questions})
-                        await state.update_data(
-                            {"status": 1})
+                        await state.update_data(count_questions=count_questions)
+
+                        status_ = 1
+                        await state.update_data(status_=status_)
+
                         await QuestionParams.question_test.set()
 
                     case int(4):
+                        # "4": "англ --> рус "
                         await bot.send_message(message.from_user.id, f"Как переводится слово {data_[1][1]}")
-                        await state.update_data(
-                            {"temp_translate": data_[1][0]})
+
+                        await state.update_data(origin_para=data_[1])
+                        await state.update_data(question_state=data_[1][1])
+                        await state.update_data(answer_state=data_[1][0])
+
                         count_questions += 1
-                        await state.update_data(
-                            {"count_questions": count_questions})
-                        await state.update_data(
-                            {"status": 1})
+                        await state.update_data(count_questions=count_questions)
+
+                        status_ = 1
+                        await state.update_data(status_=status_)
+
                         await QuestionParams.question_test.set()
 
             case "Пройти тест: фразы ->":
-                data_ = random_question("phrase")
+                data_ = random_question("phrase", f"id_{message.from_user.id}")
 
                 match data_[0]:
                     case int(3):
-                        await bot.send_message(message.from_user.id, f"Как переводится слово {data_[1][0]}")
-                        await state.update_data(
-                            {"temp_translate": data_[1][1]})
+                        # "3": "рус --> англ "
+                        await bot.send_message(message.from_user.id, f"Как переводится фраза {data_[1][0]}")
+
+                        await state.update_data(origin_para=data_[1])
+                        await state.update_data(question_state=data_[1][0])
+                        await state.update_data(answer_state=data_[1][1])
+
                         count_questions += 1
-                        await state.update_data(
-                            {"count_questions": count_questions})
-                        await state.update_data(
-                            {"status": 1})
+                        await state.update_data(count_questions=count_questions)
+
+                        status_ = 1
+                        await state.update_data(status_=status_)
+
                         await QuestionParams.question_test.set()
 
                     case int(4):
-                        await bot.send_message(message.from_user.id, f"Как переводится слово {data_[1][1]}")
-                        await state.update_data(
-                            {"temp_translate": data_[1][0]})
+                        # "4": "англ --> рус "
+                        await bot.send_message(message.from_user.id, f"Как переводится фраза {data_[1][1]}")
+
+                        await state.update_data(origin_para=data_[1])
+                        await state.update_data(question_state=data_[1][1])
+                        await state.update_data(answer_state=data_[1][0])
+
                         count_questions += 1
-                        await state.update_data(
-                            {"count_questions": count_questions})
-                        await state.update_data(
-                            {"status": 1})
+                        await state.update_data(count_questions=count_questions)
+
+                        status_ = 1
+                        await state.update_data(status_=status_)
+
                         await QuestionParams.question_test.set()
-
-        print("")
-        print(f"param_questions - {param_questions}\n"
-              f"param_percent - {param_percent}\n"
-              f"count_fails - {count_fails}\n"
-              f"count_questions - {count_questions}\n"
-              f"status - {status}")
-
-# async def answer_test(message: types.Message, state: FSMContext):
-#     """ Записываем первое слово или фразу и спрашиваем второе """
-#
-#     answer = message.text
-#
-#     # Добавить настройку счетчика в настройках
-#     # (4/10) * 100 = 40%
-#
-#     data = await state.get_data()
-#
-#     param_questions = int(data.get("param_questions"))
-#     param_percent = int(data.get("param_percent"))
-#     count_fails = int(data.get("count_fails"))
-#     count_questions = int(data.get("count_questions"))
-#
-#
-#     temp_para = data.get("temp_para")
-#     temp_translate = data.get("temp_translate")
-#
-#     list_para = []
-#     list_fails = []
-#
-#     if count_questions < param_questions:
-#
-#         if temp_translate == answer:
-#             count_questions += 1
-#             await QuestionParams.question_test.set()
-#         else:
-#             count_fails += 1
-#             count_questions += 1
-#             list_fails.append(temp_translate)
-#             list_para.append(temp_para)
-#             await QuestionParams.question_test.set()
-#     else:
-#         # Вызываем функцию для определения %
-#         # Пишем, сообщение - Правильный перевод такой - Ваш такой
-#
-#         # ((75 / 100) * 10 ) - 10 = 2.5
-#         actual_percent = (count_fails / param_questions) * 100
-#
-#         if actual_percent > param_percent:
-#             await bot.send_message(message.from_user.id, f"Тест пройден. Ваш процент ответов - {actual_percent}%")
-#
-#             await bot.send_message(message.from_user.id, f"Слова в которых допускались ошибки: "
-#                                                          f"{list_fails}, {list_para}")
-#
-#             await state.finish()
-#
-#
-#         elif actual_percent < param_percent:
-#             await bot.send_message(message.from_user.id, f"Тест НЕ пройден. Ваш процент ответов - {actual_percent}%")
-#
-#             await bot.send_message(message.from_user.id, f"Слова в которых допускались ошибки: "
-#                                                          f"{list_fails}, {list_para}")
-#
-#             await state.finish()
-#
-#     # Так же сделать процентовку
-#         if count_questions < param_questions:
-#             count_questions += 1
-#             await QuestionParams.question_test.set()
-#
-#         elif count_questions == param_questions:
-#
-#             if param_percent < 80:
-#
-#                 await bot.send_message(message.from_user.id, f"Тест пройден ")
-#                 await state.finish()
-#         else:
-#             count_questions += 1
-#             count_fails =+ 1
-#             await QuestionParams.question_test.set()
-#
-#         await bot.send_message(message.from_user.id, f"Как переводится - - -")
-#
-#         await QuestionParams.question_test.set()
-
-
-
 
 
 def register_handler_command(dp: Dispatcher):
-    """Тут собраны все обработчики для функций выше"""
 
     dp.register_message_handler(add_word, Text(equals="Добавить слово ->"))
     dp.register_message_handler(add_word, Text(equals="Добавить фразу ->"))
 
     dp.register_message_handler(start_test, Text(equals="Пройти тест: слова ->"))
+    dp.register_message_handler(start_test, Text(equals="Пройти тест: фразы ->"))
 
     dp.register_message_handler(add_word_first, state=QuestionParams.add_word_first)
     dp.register_message_handler(add_word_last, state=QuestionParams.add_word_last)
@@ -408,10 +323,3 @@ def register_handler_command(dp: Dispatcher):
     dp.register_message_handler(question_test, Text(equals="Начать ->"))
 
     dp.register_message_handler(question_test, state=QuestionParams.question_test)
-    # dp.register_message_handler(answer_test, state=QuestionParams.answer_test)
-
-
-
-
-
-

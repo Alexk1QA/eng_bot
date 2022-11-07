@@ -34,9 +34,7 @@ def update_keyboard_secondary(button, dict_):
     butt_dict_1_1 = {}
 
     for i in dict_.items():
-        # match int(i[0]):
         if int(i[0]) == int(button):
-            # case int(buttton):
             match i[1][-1]:
                 case " ":
                         butt_dict_1_1.update({f"{i[0]}": f"{i[1]}{done}"})
@@ -48,10 +46,10 @@ def update_keyboard_secondary(button, dict_):
     match int(button):
 
         case int(1):
-            butt_dict_1_1.update({"2": "За посл неделю "})
+            butt_dict_1_1.update({"2": "За все время "})
 
         case int(2):
-            butt_dict_1_1.update({"1": "За все время "})
+            butt_dict_1_1.update({"1": "За посл неделю "})
 
         case int(3):
             butt_dict_1_1.update({"4": "англ --> рус "})
@@ -83,8 +81,10 @@ def update_keyboard_main(button):
 
 
 def keyboard_choose():
+
     """Функция для динамического изменения инлайн кнопок в ручном режиме выбора параметров"""
     global inline_keyboard_choose, status
+
 
     if status == 1:
         inline_button_1 = InlineKeyboardButton(text=f"{butt_dict['1']}", callback_data=f"inline_button_1")
@@ -94,6 +94,8 @@ def keyboard_choose():
 
         inline_keyboard_choose = InlineKeyboardMarkup(row_width=2).add(inline_button_1, inline_button_2,
                                                                        inline_button_3, inline_button_4)
+        return inline_keyboard_choose
+
     elif status == 0:
         inline_button_1 = InlineKeyboardButton(text=f"{butt_dict_upd['1']}", callback_data=f"inline_button_1")
         inline_button_2 = InlineKeyboardButton(text=f"{butt_dict_upd['2']}", callback_data=f"inline_button_2")
@@ -103,7 +105,7 @@ def keyboard_choose():
 
         inline_keyboard_choose = InlineKeyboardMarkup(row_width=2).add(inline_button_1, inline_button_2,
                                                                        inline_button_3, inline_button_4)
-    return inline_keyboard_choose
+        return inline_keyboard_choose
 
 
 
