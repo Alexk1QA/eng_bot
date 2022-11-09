@@ -18,17 +18,33 @@ async def start(message: types.Message):
                            reply_markup=keyboard_start.create_keyboadr())
     await bot.delete_message(message.chat.id, message.message_id)
 
-    create_table = db2.DB(f"id_{message.from_user.id}")
+    create_table = db2.DB(message.from_user.id)
     create_table.create_table()
 
     param_questions = "param_questions"
+
     try:
         if int(create_table.select_data(param_questions)[0][0]) == 10:
             pass
 
     except Exception as ex:
-        create_table.insert_settings(3, 65)
 
+        status = 1
+        butt_dict = {
+            "1": "За посл неделю ✅",
+            "2": "За все время ",
+            "3": "рус --> англ ✅",
+            "4": "англ --> рус "
+        }
+
+        butt_dict_upd = {
+            "1": "За посл неделю ",
+            "2": "За все время ",
+            "3": "рус --> англ ",
+            "4": "англ --> рус "
+        }
+
+        create_table.insert_settings(3, 65, status, butt_dict, butt_dict_upd)
 
 async def info(message: types.Message):
     """Функция справки"""

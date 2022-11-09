@@ -1,5 +1,4 @@
-# auto_ria
-Test project telegram_bot
+# Bot for lean English 
+This is the second test bot written by me
 
-add in .env your 
-API_KEY_AUTORIA and BOT_TOKEN
+Add in .env your TOKEN for TELEGRAM

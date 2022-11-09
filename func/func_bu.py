@@ -18,7 +18,7 @@ def message_(list_):
     return message_out
 
 
-def chose_random_():
+def chose_random_(user_id):
     """ Данная функция формирует список после ввода юзером настроек для вывода теста
         actual_dict_param отдает значения:
         1 - За посл неделю, 2 - За все время, 3 - рус --> англ, 4 - англ --> рус """
@@ -26,7 +26,7 @@ def chose_random_():
     actual_dict_param = []
     list_param_random = []
 
-    for i in keyboard_choose()["inline_keyboard"]:
+    for i in keyboard_choose(user_id)["inline_keyboard"]:
         for j in i:
             if j["text"][-1].startswith('✅'):
                 actual_dict_param.append(j["callback_data"][-1])
@@ -34,11 +34,12 @@ def chose_random_():
     return actual_dict_param
 
 
-def random_question(metod, id):
+def random_question(metod, user_id):
 
-    # period_and_EN_or_RUS = chose_random_()
+    period_and_EN_or_RUS = chose_random_(user_id)
+    print(period_and_EN_or_RUS)
 
-    period_and_EN_or_RUS = [1, 3]
+    # period_and_EN_or_RUS = [2, 3]
 
     if period_and_EN_or_RUS is None:
         pass
@@ -48,12 +49,13 @@ def random_question(metod, id):
         word_eng_data_ = f"{metod}_eng"
         date_data = f"{metod}_time_add"
 
-        create_table = db2.DB(f"{id}")
+        create_table = db2.DB(user_id)
         create_table.create_table()
 
         word_rus_data = create_table.select_data(word_rus_data_)
         word_eng_data = create_table.select_data(word_eng_data_)
         date_data = create_table.select_data(date_data)
+        print(word_rus_data)
 
         all_list_data = []
         # list_data --> [['Яблоко', 'Apple'], ['Машина', 'Car']...]
@@ -85,7 +87,5 @@ def random_question(metod, id):
 
 
 # metod = "word"
-# id = "id_476610055"
+# id = "476610055"
 # (print(random_question(metod, id)))
-
-

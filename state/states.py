@@ -12,6 +12,8 @@ class QuestionParams(StatesGroup):
     question_test = State()
     answer_test = State()
 
+    user_settings_update = State()
+
 
 
 
