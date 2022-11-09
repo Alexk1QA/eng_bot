@@ -46,6 +46,7 @@ async def start(message: types.Message):
 
         create_table.insert_settings(3, 65, status, butt_dict, butt_dict_upd)
 
+
 async def info(message: types.Message):
     """Функция справки"""
 
@@ -56,7 +57,7 @@ async def info(message: types.Message):
                            reply_markup=keyboard_info.create_keyboadr())
 
 
-def register_handler_comands_command(dp: Dispatcher):
+def register_handler_commands_command(dp: Dispatcher):
     """Тут собраны все обработчики для функций выше"""
 
     dp.register_message_handler(start, commands=["start"])

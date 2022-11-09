@@ -110,8 +110,6 @@ async def start_test(message: types.Message, state: FSMContext):
     param_questions = "param_questions"
     param_percent = "param_percent"
 
-    print(create_table.select_data(param_questions)[0][0])
-
     await state.update_data(param_questions=int(create_table.select_data(param_questions)[0][0]))
     await state.update_data(param_percent=int(create_table.select_data(param_percent)[0][0]))
     await state.update_data(count_fails=0)
@@ -143,7 +141,6 @@ async def question_test(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
 
     param_questions = int(state_data["param_questions"])
-    print(param_questions)
     param_percent = int(state_data["param_percent"])
     count_fails = int(state_data["count_fails"])
     count_questions = int(state_data["count_questions"])

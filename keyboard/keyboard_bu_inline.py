@@ -16,9 +16,9 @@ def update_keyboard_secondary(button, dict_, user_id):
         if int(i[0]) == int(button):
             match i[1][-1]:
                 case " ":
-                        butt_dict_1_1.update({f"{i[0]}": f"{i[1]}{done}"})
+                    butt_dict_1_1.update({f"{i[0]}": f"{i[1]}{done}"})
                 case "✅":
-                        butt_dict_1_1.update({f"{i[0]}": f"{i[1][0:-1]} "})
+                    butt_dict_1_1.update({f"{i[0]}": f"{i[1][0:-1]} "})
         else:
             butt_dict_1_1.update({f"{i[0]}": f"{i[1]}"})
 
@@ -49,7 +49,6 @@ def update_keyboard_main(button, user_id):
     data_base = db2.DB(user_id)
 
     status = int(data_base.status_select()[0][0])
-    print(status)
 
     if status == 1:
         butt_dict = data_base.butt_dict_select()

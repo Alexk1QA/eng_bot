@@ -37,7 +37,6 @@ def chose_random_(user_id):
 def random_question(metod, user_id):
 
     period_and_EN_or_RUS = chose_random_(user_id)
-    print(period_and_EN_or_RUS)
 
     # period_and_EN_or_RUS = [2, 3]
 
@@ -55,7 +54,6 @@ def random_question(metod, user_id):
         word_rus_data = create_table.select_data(word_rus_data_)
         word_eng_data = create_table.select_data(word_eng_data_)
         date_data = create_table.select_data(date_data)
-        print(word_rus_data)
 
         all_list_data = []
         # list_data --> [['Яблоко', 'Apple'], ['Машина', 'Car']...]
@@ -74,7 +72,7 @@ def random_question(metod, user_id):
                         all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0]])
 
             if int(period_and_EN_or_RUS[0]) == int(1):
-                print(all_list_data)
+                pass
 
             elif int(period_and_EN_or_RUS[0]) == int(2):
 

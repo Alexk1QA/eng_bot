@@ -34,18 +34,15 @@ class DB:
 # -----------------------------------------------func for handlers----------------------------------------------------#
 # --------------------------------------------------------------------------------------------------------------------#
     def insert_data(self, metod, data_rus, data_eng):
-        print(metod)
         time_ = time.ctime()
 
         cursor.execute(
             f"INSERT INTO {self.id_user} ({f'{metod}_rus'}, {f'{metod}_eng'}, {f'{metod}_time_add'})"
             f"VALUES ( ?, ?, ?)", (data_rus, data_eng, time_))
         connect.commit()
-        print(self.id_user)
-        print("---")
+
 
     def insert_data_1(self, metod, data_rus, data_eng):
-        print(metod)
         time_ = time.ctime()
 
         cursor.execute(
