@@ -154,6 +154,7 @@ async def start_test(message: types.Message, state: FSMContext):
 
     if len(word_rus) < 10:
         await bot.send_message(message.from_user.id, f"Минимальное значение слов или фраз для начала теста - 10")
+        await bot.delete_message(message.chat.id, message.message_id)
 
     else:
         answer = message.text
