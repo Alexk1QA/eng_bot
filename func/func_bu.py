@@ -1,6 +1,7 @@
 from keyboard.keyboard_bu_inline import *
+from datetime import datetime, timedelta
+import datetime as dt
 from DB import db2
-import sqlite3
 import random
 
 
@@ -11,7 +12,7 @@ def message_(list_):
     count_word = 1
 
     for i in list_:
-        a = f"{count_word} - {i[0][0]} / {i[0][1]}. Вы ввели - {i[1]}"
+        a = f"{count_word} - {i[0][0]} / {i[0][1]}. Вы ввели - «{i[1]}»"
         message_out = f"{message_out + a} \n"
         count_word += 1
 
@@ -24,11 +25,10 @@ def chose_random_(user_id):
         1 - За посл неделю, 2 - За все время, 3 - рус --> англ, 4 - англ --> рус """
 
     actual_dict_param = []
-    list_param_random = []
 
     for i in keyboard_choose(user_id)["inline_keyboard"]:
         for j in i:
-            if j["text"][-1].startswith('✅'):
+            if j["text"][-1].startswith('✅') or j["text"][-8].startswith('✅'):
                 actual_dict_param.append(j["callback_data"][-1])
 
     return actual_dict_param
@@ -37,26 +37,24 @@ def chose_random_(user_id):
 def random_question(metod, user_id):
 
     period_and_EN_or_RUS = chose_random_(user_id)
-
-    # period_and_EN_or_RUS = [2, 3]
-
+    # example period_and_EN_or_RUS --> [2, 3]
+    print(period_and_EN_or_RUS)
     if period_and_EN_or_RUS is None:
         pass
-    else:
 
+    else:
         word_rus_data_ = f"{metod}_rus"
         word_eng_data_ = f"{metod}_eng"
         date_data = f"{metod}_time_add"
 
-        create_table = db2.DB(user_id)
-        create_table.create_table()
+        data_base = db2.DB(user_id)
+        data_base.create_table()
 
-        word_rus_data = create_table.select_data(word_rus_data_)
-        word_eng_data = create_table.select_data(word_eng_data_)
-        date_data = create_table.select_data(date_data)
+        word_rus_data = data_base.select_data(word_rus_data_)
+        word_eng_data = data_base.select_data(word_eng_data_)
+        date_data = data_base.select_data(date_data)
 
         all_list_data = []
-        # list_data --> [['Яблоко', 'Apple'], ['Машина', 'Car']...]
 
         if int(period_and_EN_or_RUS[0]) == int(1) or int(period_and_EN_or_RUS[0]) == int(2):
             # Делаем перебор из слов за НЕДЕЛЮ
@@ -67,12 +65,41 @@ def random_question(metod, user_id):
                 else:
                     if int(period_and_EN_or_RUS[0]) == int(1):
                         all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0], date_data[word_rus_data.index(j)][0]])
+            # example [['Яблоко', 'Apple', 'Wed Nov  9 19:56:04 2022'], ['www', 'www', 'Wed Nov  9 19:56:32 2022']...]
 
                     elif int(period_and_EN_or_RUS[0]) == int(2):
                         all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0]])
+                        # example [['Яблоко', 'Apple'], ['Машина', 'Car']...]
 
             if int(period_and_EN_or_RUS[0]) == int(1):
-                pass
+
+                param_day = "param_day"
+                param_date = data_base.select_data(param_day)[0][0]
+
+                print(param_date)
+
+                mod_date = datetime.now() + timedelta(days=-param_date)
+                data = str(mod_date.date())
+                range_date_str = data[8:10] + data[4:8] + data[0:4]
+
+                list_range = []
+
+                for i in all_list_data:
+                    items_in_list = i[2][0:6] + "20" + i[2][6:8]
+
+                    range_date_str_ = dt.datetime.strptime(range_date_str, '%d-%m-%Y')
+                    items_in_list_ = dt.datetime.strptime(items_in_list, '%d-%m-%Y')
+
+                    if range_date_str_ <= items_in_list_:
+                        list_range.append([i[0], i[1]])
+
+                random_data = random.choice(list_range)
+
+                return_list = [int(period_and_EN_or_RUS[1]), random_data]
+
+                print(f"random_question {return_list}")
+                return return_list
+                # return_list -->[3, [['Яблоко', 'Apple']]
 
             elif int(period_and_EN_or_RUS[0]) == int(2):
 
@@ -80,10 +107,6 @@ def random_question(metod, user_id):
 
                 return_list = [int(period_and_EN_or_RUS[1]), random_data]
 
+                print(return_list)
                 return return_list
-            # return_list -->[3, [['Яблоко', 'Apple']]
-
-
-# metod = "word"
-# id = "476610055"
-# (print(random_question(metod, id)))
+                # return_list -->[3, [['Яблоко', 'Apple']]

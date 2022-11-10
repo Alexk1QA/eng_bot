@@ -2,7 +2,6 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 
 class Keyboard:
-
     def __init__(self, list_button):
         self.list_button = list_button
 

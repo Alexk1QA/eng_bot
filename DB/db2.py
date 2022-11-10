@@ -1,5 +1,5 @@
+from datetime import datetime
 import sqlite3
-import time
 
 connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
 cursor = connect.cursor()
@@ -22,6 +22,7 @@ class DB:
                                          param_questions int,
                                          param_percent int,
                                          status_ int,
+                                         param_day int,
                                          butt_dict_id int,
                                          butt_dict_data TEXT,
                                          butt_dict_upd_id int,
@@ -34,27 +35,19 @@ class DB:
 # -----------------------------------------------func for handlers----------------------------------------------------#
 # --------------------------------------------------------------------------------------------------------------------#
     def insert_data(self, metod, data_rus, data_eng):
-        time_ = time.ctime()
+
+        time_ = datetime.now().strftime("%d-%m-%y  %H:%M:%S")
 
         cursor.execute(
             f"INSERT INTO {self.id_user} ({f'{metod}_rus'}, {f'{metod}_eng'}, {f'{metod}_time_add'})"
             f"VALUES ( ?, ?, ?)", (data_rus, data_eng, time_))
         connect.commit()
 
-
-    def insert_data_1(self, metod, data_rus, data_eng):
-        time_ = time.ctime()
+    def insert_settings(self, param_questions, param_percent, status_, param_day, butt_dict, butt_dict_upd):
 
         cursor.execute(
-            f"INSERT INTO {self.id_user} ({f'{metod}_rus'}, {f'{metod}_eng'}, {f'{metod}_time_add'})"
-            f"VALUES ( ?, ?, ?)", (data_rus, data_eng, time_))
-        connect.commit()
-
-    def insert_settings(self, param_questions, param_percent, status_, butt_dict, butt_dict_upd):
-
-        cursor.execute(
-            f"INSERT INTO {self.id_user} (param_questions, param_percent, status_)"
-            f"VALUES ( ?, ?, ? )", (param_questions, param_percent, status_))
+            f"INSERT INTO {self.id_user} (param_questions, param_percent, status_, param_day)"
+            f"VALUES ( ?, ?, ?, ?)", (param_questions, param_percent, status_, param_day))
         connect.commit()
 
         for i in butt_dict.items():
@@ -68,6 +61,10 @@ class DB:
                 f"INSERT INTO {self.id_user} (butt_dict_upd_id, butt_dict_upd_data)"
                 f"VALUES ( ?, ? )", (i[0], i[1]))
             connect.commit()
+
+    def settings_update(self, column_, data_updating):
+        cursor.execute(f""" UPDATE {self.id_user} SET '{column_}' = '{data_updating}' WHERE id = 1 """)
+        connect.commit()
 
     def select_data(self, column_):
         # cursor.execute(f"""SELECT {column_} FROM {self.id_user}""")
@@ -88,13 +85,13 @@ class DB:
 
         for i in data_updating.items():
             cursor.execute(f""" UPDATE {self.id_user} SET butt_dict_data = '{i[1]}' 
-            WHERE butt_dict_id = '{int(i[0])}' """)
+                                                      WHERE butt_dict_id = '{int(i[0])}' """)
             connect.commit()
 
     def butt_dict_upd_update(self, data_updating):
         for i in data_updating.items():
             cursor.execute(f""" UPDATE {self.id_user} SET butt_dict_upd_data = '{i[1]}' 
-            WHERE butt_dict_upd_id = '{int(i[0])}' """)
+                                                      WHERE butt_dict_upd_id = '{int(i[0])}' """)
             connect.commit()
 
     def status_select(self):
@@ -135,6 +132,9 @@ class DB:
 # --------------------------------------------------------------------------------------------------------------------#
 # -------------------------------------------------func in development------------------------------------------------#
 # --------------------------------------------------------------------------------------------------------------------#
+
+    def update_data_for_user(self):
+        pass
 
     def delete_data(self):
         pass
