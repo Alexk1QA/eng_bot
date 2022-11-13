@@ -1,7 +1,8 @@
 from datetime import datetime
 import sqlite3
 
-connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
+# connect = sqlite3.connect("/Users/macbook/Desktop/english_bot/DB/eng_bot.accdb")
+connect = sqlite3.connect("/home/ubuntu/eng_bot_2/eng_bot/DB/eng_bot.accdb")
 cursor = connect.cursor()
 
 
