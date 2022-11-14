@@ -111,7 +111,7 @@ class DB:
         butt_dict = {}
 
         for i in butt_dict_id:
-                butt_dict[f"{i[0]}"] = f"{butt_dict_data[butt_dict_id.index(i)][0]}"
+            butt_dict[f"{i[0]}"] = f"{butt_dict_data[butt_dict_id.index(i)][0]}"
 
         return butt_dict
 
@@ -126,7 +126,7 @@ class DB:
         butt_dict_upd = {}
 
         for i in butt_dict_id:
-                butt_dict_upd[f"{i[0]}"] = f"{butt_dict_data[butt_dict_id.index(i)][0]}"
+            butt_dict_upd[f"{i[0]}"] = f"{butt_dict_data[butt_dict_id.index(i)][0]}"
 
         return butt_dict_upd
 

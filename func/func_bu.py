@@ -38,7 +38,7 @@ def random_question(metod, user_id):
 
     period_and_EN_or_RUS = chose_random_(user_id)
     # example period_and_EN_or_RUS --> [2, 3]
-    print(period_and_EN_or_RUS)
+
     if period_and_EN_or_RUS is None:
         pass
 
@@ -64,7 +64,8 @@ def random_question(metod, user_id):
                     pass
                 else:
                     if int(period_and_EN_or_RUS[0]) == int(1):
-                        all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0], date_data[word_rus_data.index(j)][0]])
+                        all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0],
+                                              date_data[word_rus_data.index(j)][0]])
             # example [['Яблоко', 'Apple', 'Wed Nov  9 19:56:04 2022'], ['www', 'www', 'Wed Nov  9 19:56:32 2022']...]
 
                     elif int(period_and_EN_or_RUS[0]) == int(2):
@@ -75,8 +76,6 @@ def random_question(metod, user_id):
 
                 param_day = "param_day"
                 param_date = data_base.select_data(param_day)[0][0]
-
-                print(param_date)
 
                 mod_date = datetime.now() + timedelta(days=-param_date)
                 data = str(mod_date.date())
@@ -97,7 +96,6 @@ def random_question(metod, user_id):
 
                 return_list = [int(period_and_EN_or_RUS[1]), random_data]
 
-                print(f"random_question {return_list}")
                 return return_list
                 # return_list -->[3, [['Яблоко', 'Apple']]
 
@@ -107,6 +105,5 @@ def random_question(metod, user_id):
 
                 return_list = [int(period_and_EN_or_RUS[1]), random_data]
 
-                print(return_list)
                 return return_list
                 # return_list -->[3, [['Яблоко', 'Apple']]

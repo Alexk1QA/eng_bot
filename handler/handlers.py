@@ -149,15 +149,29 @@ async def start_test(message: types.Message, state: FSMContext):
 
     data_base = db2.DB(message.from_user.id)
 
-    word_rus = "word_rus"
-    word_rus = data_base.select_data(word_rus)
+    answer = message.text
 
-    if len(word_rus) < 10:
-        await bot.send_message(message.from_user.id, f"Минимальное значение слов или фраз для начала теста - 10")
+    len_data = []
+    message_print = ""
+    try:
+        match answer:
+            case "Пройти тест: слова ->":
+                len_data = len(data_base.select_data("word_rus"))
+                message_print = "слов"
+
+            case "Пройти тест: фразы ->":
+                len_data = len(data_base.select_data("phrase_rus"))
+                message_print = "фраз"
+    except Exception:
+        pass
+
+    if len_data < 10:
+        await bot.send_message(message.from_user.id, f"Минимальное значение {message_print} для начала теста - 10.\n"
+                                                     f"На данный момент у вас {message_print} - {len_data} ")
         await bot.delete_message(message.chat.id, message.message_id)
 
     else:
-        answer = message.text
+
 
         param_questions = "param_questions"
         param_percent = "param_percent"
@@ -446,7 +460,9 @@ async def question_test(message: types.Message, state: FSMContext):
 async def user_settings(message: types.Message, state: FSMContext):
     """ Записываем второе слово и спрашиваем будет ли второе слово для записи """
 
-    create_table = db2.DB(message.from_user.id)
+    await bot.delete_message(message.chat.id, message.message_id)
+
+    data_base = db2.DB(message.from_user.id)
 
     param_questions_ = "param_questions"
     param_percent_ = "param_percent"
@@ -458,12 +474,23 @@ async def user_settings(message: types.Message, state: FSMContext):
 
     keyboard_settings = Keyboard(buttons)
 
+    len_dict_word = 0
+    len_dict_phrase = 0
+
+    try:
+        len_dict_word = len(data_base.select_data("word_rus"))
+        len_dict_phrase = len(data_base.select_data("phrase_rus"))
+    except Exception:
+        pass
+
     await bot.send_message(message.from_user.id, f"{handlers_dict[f'user_settings']}\n\n"
                                                  f"Количество вопросов - "
-                                                 f"{create_table.select_data(param_questions_)[0][0]}\n"
-                                                 f"Процент ошибок - {create_table.select_data(param_percent_)[0][0]}%\n"
+                                                 f"{data_base.select_data(param_questions_)[0][0]}\n"
+                                                 f"Процент ошибок - {data_base.select_data(param_percent_)[0][0]}%\n"
                                                  f"Ручной период для теста - "
-                                                 f"{create_table.select_data(param_day)[0][0]} дней ",
+                                                 f"{data_base.select_data(param_day)[0][0]} дней\n\n"
+                                                 f"Всего слов добавлено - {len_dict_word}\n"
+                                                 f"Всего фраз добавлено - {len_dict_phrase}\n",
                            reply_markup=keyboard_settings.create_keyboadr())
 
     await QuestionParams.user_settings_update.set()
@@ -565,6 +592,7 @@ async def user_settings_update(message: types.Message, state: FSMContext):
 
         await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                reply_markup=keyboard_start.create_keyboadr())
+        await bot.delete_message(message.chat.id, message.message_id)
 
 
 async def replay_questions(message: types.Message):
@@ -573,18 +601,20 @@ async def replay_questions(message: types.Message):
     data_base = db2.DB(message.from_user.id)
 
     word_rus = "word_rus"
-    word_rus = data_base.select_data(word_rus)
+    word_rus = len(data_base.select_data(word_rus))
 
-    if len(word_rus) < 10:
-        await bot.send_message(message.from_user.id, f"Минимальное значение слов или фраз для повторения - 10")
+    if word_rus < 10:
+        await bot.send_message(message.from_user.id, f"Минимальное значение слов для повторения - 10.\n"
+                                                     f"На данный момент у вас слов - {word_rus} ")
+        await bot.delete_message(message.chat.id, message.message_id)
 
     else:
-        metod = "word"
+        method_ = "word"
 
         await bot.delete_message(message.chat.id, message.message_id)
 
         await bot.send_message(message.from_user.id, f"replay_questions {handlers_dict[f'replay_word']}",
-                               reply_markup=keyboard_choose_replay(metod, message.from_user.id))
+                               reply_markup=keyboard_choose_replay(method_, message.from_user.id))
 
 
 def register_handler_command(dp: Dispatcher):
