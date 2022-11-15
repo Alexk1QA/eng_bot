@@ -24,6 +24,7 @@ class DB:
                                          param_percent int,
                                          status_ int,
                                          param_day int,
+                                         param_answer int,
                                          butt_dict_id int,
                                          butt_dict_data TEXT,
                                          butt_dict_upd_id int,
@@ -35,20 +36,20 @@ class DB:
 # --------------------------------------------------------------------------------------------------------------------#
 # -----------------------------------------------func for handlers----------------------------------------------------#
 # --------------------------------------------------------------------------------------------------------------------#
-    def insert_data(self, metod, data_rus, data_eng):
+    def insert_data(self, method, data_rus, data_eng):
 
         time_ = datetime.now().strftime("%d-%m-%y  %H:%M:%S")
 
         cursor.execute(
-            f"INSERT INTO {self.id_user} ({f'{metod}_rus'}, {f'{metod}_eng'}, {f'{metod}_time_add'})"
+            f"INSERT INTO {self.id_user} ({f'{method}_rus'}, {f'{method}_eng'}, {f'{method}_time_add'})"
             f"VALUES ( ?, ?, ?)", (data_rus, data_eng, time_))
         connect.commit()
 
-    def insert_settings(self, param_questions, param_percent, status_, param_day, butt_dict, butt_dict_upd):
+    def insert_settings(self, param_questions, param_percent, status_, param_day, param_answer, butt_dict, butt_dict_upd):
 
         cursor.execute(
-            f"INSERT INTO {self.id_user} (param_questions, param_percent, status_, param_day)"
-            f"VALUES ( ?, ?, ?, ?)", (param_questions, param_percent, status_, param_day))
+            f"INSERT INTO {self.id_user} (param_questions, param_percent, status_, param_day, param_answer)"
+            f"VALUES ( ?, ?, ?, ?, ?)", (param_questions, param_percent, status_, param_day, param_answer))
         connect.commit()
 
         for i in butt_dict.items():

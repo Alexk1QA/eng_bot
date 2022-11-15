@@ -14,7 +14,7 @@ async def start(message: types.Message):
     keyboard_start = Keyboard(button)
 
     await bot.send_message(message.from_user.id, f"{message_handlers.handlers_dict['start']}",
-                           reply_markup=keyboard_start.create_keyboadr())
+                           reply_markup=keyboard_start.create_keyboadr(3))
     await bot.delete_message(message.chat.id, message.message_id)
 
     create_table = db2.DB(message.from_user.id)
@@ -26,11 +26,15 @@ async def start(message: types.Message):
         if int(create_table.select_data(param_questions)[0][0]) == 10:
             pass
 
-    except Exception:
+    except Exception as ex:
+        print(ex)
 
-        default_day = 7
-
+        param_questions = 3
+        param_percent = 50
         status = 1
+        default_day = 7
+        param_answer = 0
+
         butt_dict = {
             "1": "За период ",
             "2": "За все время ✅",
@@ -45,7 +49,8 @@ async def start(message: types.Message):
             "4": "англ --> рус "
         }
 
-        create_table.insert_settings(3, 50, status, default_day, butt_dict, butt_dict_upd)
+        create_table.insert_settings(param_questions, param_percent, status,
+                                     default_day, param_answer, butt_dict, butt_dict_upd)
 
 
 async def info(message: types.Message):
@@ -55,7 +60,7 @@ async def info(message: types.Message):
     keyboard_info = Keyboard(button)
 
     await bot.send_message(message.from_user.id, f"{message_handlers.handlers_dict['info']}",
-                           reply_markup=keyboard_info.create_keyboadr())
+                           reply_markup=keyboard_info.create_keyboadr(3))
 
 
 def register_handler_commands_command(dp: Dispatcher):
