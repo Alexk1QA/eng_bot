@@ -34,7 +34,7 @@ def chose_random_(user_id):
     return actual_dict_param
 
 
-def random_question(metod, user_id):
+def random_question(method_, user_id, mode_func):
 
     period_and_EN_or_RUS = chose_random_(user_id)
     # example period_and_EN_or_RUS --> [2, 3]
@@ -43,9 +43,9 @@ def random_question(metod, user_id):
         pass
 
     else:
-        word_rus_data_ = f"{metod}_rus"
-        word_eng_data_ = f"{metod}_eng"
-        date_data = f"{metod}_time_add"
+        word_rus_data_ = f"{method_}_rus"
+        word_eng_data_ = f"{method_}_eng"
+        date_data = f"{method_}_time_add"
 
         data_base = db2.DB(user_id)
         data_base.create_table()
@@ -55,6 +55,9 @@ def random_question(metod, user_id):
         date_data = data_base.select_data(date_data)
 
         all_list_data = []
+
+        if mode_func == 1:
+            period_and_EN_or_RUS = [2, 2]
 
         if int(period_and_EN_or_RUS[0]) == int(1) or int(period_and_EN_or_RUS[0]) == int(2):
             # Делаем перебор из слов за НЕДЕЛЮ
@@ -71,39 +74,46 @@ def random_question(metod, user_id):
                     elif int(period_and_EN_or_RUS[0]) == int(2):
                         all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0]])
                         # example [['Яблоко', 'Apple'], ['Машина', 'Car']...]
+            if mode_func == 1:
+                # with open(f'/Users/macbook/Desktop/english_bot/temporary/words_id_{user_id}.txt', 'w') as file:
+                with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
+                    file.writelines(f'{row[0]} - {row[1]}\n' for row in all_list_data)
 
-            if int(period_and_EN_or_RUS[0]) == int(1):
+                return file
 
-                param_day = "param_day"
-                param_date = data_base.select_data(param_day)[0][0]
+            else:
+                if int(period_and_EN_or_RUS[0]) == int(1):
 
-                mod_date = datetime.now() + timedelta(days=-param_date)
-                data = str(mod_date.date())
-                range_date_str = data[8:10] + data[4:8] + data[0:4]
+                    param_day = "param_day"
+                    param_date = data_base.select_data(param_day)[0][0]
 
-                list_range = []
+                    mod_date = datetime.now() + timedelta(days=-param_date)
+                    data = str(mod_date.date())
+                    range_date_str = data[8:10] + data[4:8] + data[0:4]
 
-                for i in all_list_data:
-                    items_in_list = i[2][0:6] + "20" + i[2][6:8]
+                    list_range = []
 
-                    range_date_str_ = dt.datetime.strptime(range_date_str, '%d-%m-%Y')
-                    items_in_list_ = dt.datetime.strptime(items_in_list, '%d-%m-%Y')
+                    for i in all_list_data:
+                        items_in_list = i[2][0:6] + "20" + i[2][6:8]
 
-                    if range_date_str_ <= items_in_list_:
-                        list_range.append([i[0], i[1]])
+                        range_date_str_ = dt.datetime.strptime(range_date_str, '%d-%m-%Y')
+                        items_in_list_ = dt.datetime.strptime(items_in_list, '%d-%m-%Y')
 
-                random_data = random.choice(list_range)
+                        if range_date_str_ <= items_in_list_:
+                            list_range.append([i[0], i[1]])
 
-                return_list = [int(period_and_EN_or_RUS[1]), random_data]
+                    random_data = random.choice(list_range)
 
-                return return_list
-                # return_list -->[3, [['Яблоко', 'Apple']]
+                    return_list = [int(period_and_EN_or_RUS[1]), random_data]
 
-            elif int(period_and_EN_or_RUS[0]) == int(2):
+                    return return_list
+                    # return_list -->[3, [['Яблоко', 'Apple']]
 
-                random_data = random.choice(all_list_data)
+                elif int(period_and_EN_or_RUS[0]) == int(2):
 
-                return_list = [int(period_and_EN_or_RUS[1]), random_data]
+                    random_data = random.choice(all_list_data)
 
-                return return_list
-                # return_list -->[3, [['Яблоко', 'Apple']]
+                    return_list = [int(period_and_EN_or_RUS[1]), random_data]
+
+                    return return_list
+                    # return_list -->[3, [['Яблоко', 'Apple']]

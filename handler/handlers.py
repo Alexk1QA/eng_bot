@@ -475,7 +475,7 @@ async def question_test(message: types.Message, state: FSMContext):
         list_delete = state_data["list_delete"]
         match temp_method:
             case "Пройти тест: слова ->":
-                data_ = random_question("word", message.from_user.id)
+                data_ = random_question("word", message.from_user.id, 0)
                 # example data_ --> # [3, ['Яблоко', 'Apple']]
 
                 match data_[0]:
@@ -519,7 +519,7 @@ async def question_test(message: types.Message, state: FSMContext):
                         await QuestionParams.question_test.set()
 
             case "Пройти тест: фразы ->":
-                data_ = random_question("phrase", message.from_user.id)
+                data_ = random_question("phrase", message.from_user.id, 0)
 
                 match data_[0]:
                     case int(3):
@@ -576,7 +576,8 @@ async def user_settings(message: types.Message, state: FSMContext):
 
     await state.update_data(user_settings_status=0)
 
-    buttons = ["Вопросы ->", "Процент ошибок ->", "Ручной режим ->", "Добавление слов ->", "Назад ->"]
+    buttons = ["Вопросы ->", "Процент ошибок ->", "Ручной режим ->", "Добавление слов ->",
+               "Скачать слова ->", "Скачать фразы ->", "Назад ->"]
 
     keyboard_settings = Keyboard(buttons)
 
@@ -661,6 +662,35 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                     await state.update_data(user_settings_update=answer)
                     await QuestionParams.user_settings_update.set()
 
+                case "Скачать слова ->":
+
+                    try:
+                        method_ = "word"
+
+                        random_question(method_, message.from_user.id, 1)
+                    # doc = open(f'/Users/macbook/Desktop/english_bot/temporary/words_id_{message.from_user.id}.txt')
+                        doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
+                        await bot.send_document(message.from_user.id, doc)
+                        await bot.delete_message(message.chat.id, message.message_id)
+
+                    except Exception as ex:
+                        print(ex)
+                        await bot.send_message(message.from_user.id, f"У Вас нет слов для скачивания ")
+
+                case "Скачать фразы ->":
+
+                    try:
+                        method_ = "phrase"
+
+                        random_question(method_, message.from_user.id, 1)
+                    # doc = open(f'/Users/macbook/Desktop/english_bot/temporary/words_id_{message.from_user.id}.txt')
+                        doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
+                        await bot.send_document(message.from_user.id, doc)
+                        await bot.delete_message(message.chat.id, message.message_id)
+
+                    except Exception as ex:
+                        print(ex)
+                        await bot.send_message(message.from_user.id, f"У Вас нет фраз для скачивания ")
                 case _:
                     user_settings_status = 1
                     await state.finish()
