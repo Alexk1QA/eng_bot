@@ -1,8 +1,0 @@
-Не отслеживаетсья - Untracked
-Отслеживается - Tracked
-Требования - Requirements
-Источник - Source
-Требуется - Required
-Ответ - Response
-Машина - Car
-Ссылка - Reference
