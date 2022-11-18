@@ -77,7 +77,7 @@ def random_question(method_, user_id, mode_func):
             if mode_func == 1:
                 # with open(f'/Users/macbook/Desktop/english_bot/temporary/words_id_{user_id}.txt', 'w') as file:
                 with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
-                    file.writelines(f'{row[0]} - {row[1]}\n' for row in all_list_data)
+                    file.writelines(f'{row[1]} - {row[0]}\n' for row in all_list_data)
 
                 return file
 

@@ -14,11 +14,11 @@ class DB:
     def create_table(self):
         cursor.execute(f'''CREATE TABLE IF NOT EXISTS {self.id_user}(
                                          id INTEGER PRIMARY KEY autoincrement,
-                                         word_rus TEXT,
                                          word_eng TEXT,
+                                         word_rus TEXT,
                                          word_time_add timestamp,
-                                         phrase_rus TEXT,
                                          phrase_eng TEXT,
+                                         phrase_rus TEXT,
                                          phrase_time_add timestamp,
                                          param_questions int,
                                          param_percent int,
