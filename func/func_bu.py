@@ -39,8 +39,9 @@ def random_question(method_, user_id, mode_func):
     period_and_EN_or_RUS = chose_random_(user_id)
     # example period_and_EN_or_RUS --> [2, 3]
 
-    if period_and_EN_or_RUS is None:
-        pass
+    if period_and_EN_or_RUS is None or len(period_and_EN_or_RUS) == 1:
+
+        return None
 
     else:
         word_rus_data_ = f"{method_}_rus"
