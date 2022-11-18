@@ -24,16 +24,12 @@ def update_keyboard_secondary(button, dict_, user_id):
             butt_dict_1_1.update({f"{i[0]}": f"{i[1]}"})
 
     match int(button):
-
         case int(1):
             butt_dict_1_1.update({"2": "За все время "})
-
         case int(2):
             butt_dict_1_1.update({"1": "За период "})
-
         case int(3):
             butt_dict_1_1.update({"4": "англ --> рус "})
-
         case int(4):
             butt_dict_1_1.update({"3": "рус --> англ "})
 
@@ -48,7 +44,6 @@ def update_keyboard_main(button, user_id):
     """Доп функция для динамического изменения инлайн кнопок"""
 
     data_base = db2.DB(user_id)
-
     status = int(data_base.status_select()[0][0])
 
     if status == 1:
@@ -103,7 +98,7 @@ def keyboard_choose(user_id):
         return inline_keyboard_choose
 
 
-def keyboard_choose_replay(metod, user_id):
+def keyboard_choose_replay(method_, user_id):
     """Функция для динамического изменения инлайн кнопок в ручном режиме выбора параметров"""
 
     data_base = db2.DB(user_id)
@@ -111,13 +106,11 @@ def keyboard_choose_replay(metod, user_id):
     status = int(data_base.status_select()[0][0])
 
     if status == 1:
-        # butt_dict = data_base.butt_dict_select()
 
-        data = random_question_for_inline(metod, user_id)
+        data = random_question_for_inline(method_, user_id)
         random_data = random.choice(data)
 
-        # inline_button_1 = InlineKeyboardButton(text=f"{butt_dict['1']}", callback_data=f"replay_1")
-        inline_button_1 = InlineKeyboardButton(text=f"{random_data[0]} - {random_data[1]} ", callback_data=f"replay_1")
+        inline_button_1 = InlineKeyboardButton(text=f"{random_data[1]} - {random_data[0]} ", callback_data=f"replay_1")
 
         inline_keyboard_choose = InlineKeyboardMarkup(row_width=2).add(inline_button_1)
 
@@ -126,13 +119,11 @@ def keyboard_choose_replay(metod, user_id):
         return inline_keyboard_choose
 
     elif status == 0:
-        # butt_dict_upd = data_base.butt_dict_upd_select()
 
-        data_2 = random_question_for_inline(metod, user_id)
+        data_2 = random_question_for_inline(method_, user_id)
         random_data_2 = random.choice(data_2)
 
-        # inline_button_1 = InlineKeyboardButton(text=f"{butt_dict_upd['1']}", callback_data=f"replay_1")
-        inline_button_1 = InlineKeyboardButton(text=f"{random_data_2[0]} - {random_data_2[1]}",
+        inline_button_1 = InlineKeyboardButton(text=f"{random_data_2[1]} - {random_data_2[0]}",
                                                callback_data=f"replay_1")
 
         inline_keyboard_choose_2 = InlineKeyboardMarkup(row_width=2).add(inline_button_1)
@@ -142,11 +133,11 @@ def keyboard_choose_replay(metod, user_id):
         return inline_keyboard_choose_2
 
 
-def random_question_for_inline(metod, user_id):
+def random_question_for_inline(method_, user_id):
     data_base = db2.DB(user_id)
 
-    word_rus_data_ = f"{metod}_rus"
-    word_eng_data_ = f"{metod}_eng"
+    word_rus_data_ = f"{method_}_rus"
+    word_eng_data_ = f"{method_}_eng"
 
     word_rus_data = data_base.select_data(word_rus_data_)
     word_eng_data = data_base.select_data(word_eng_data_)

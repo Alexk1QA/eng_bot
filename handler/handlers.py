@@ -348,7 +348,6 @@ async def question_test(message: types.Message, state: FSMContext):
             count_questions = param_questions
 
         case _:
-            list_delete = state_data["list_delete"]
             match status_:
                 case 0:
                     pass
@@ -392,10 +391,8 @@ async def question_test(message: types.Message, state: FSMContext):
                         # Пример 3/10  * 100 = 30 %
 
                         if count_fails == 0:
-
-                            del_msg = await bot.send_message(message.from_user.id,
-                                                             f"Тест пройден. Ваш процент ответов - 100%")
-                            list_delete.append(del_msg.message_id)
+                            await bot.send_message(message.from_user.id,
+                                                   f"Тест пройден. Ваш процент ответов - 100%")
 
                         else:
                             finally_state_data = await state.get_data()
@@ -410,29 +407,24 @@ async def question_test(message: types.Message, state: FSMContext):
                                     pass
 
                             if actual_percent > max_percent_fails:
-
                                 list_fails = state_data["list_fails"]
 
-                                del_msg = await bot.send_message(message.from_user.id,
-                                                                 f"Тест НЕ пройден. Ваш процент ответов - "
-                                                                 f"{str(100 - int(actual_percent))[0:5]}%")
-                                list_delete.append(del_msg.message_id)
+                                await bot.send_message(message.from_user.id,
+                                                       f"Тест НЕ пройден. Ваш процент ответов - "
+                                                       f"{str(100 - int(actual_percent))[0:5]}%")
 
-                                del_msg_2 = await bot.send_message(message.from_user.id,
-                                                                   f"Слова в которых допускались ошибки: "
-                                                                   f"{message_(list_fails)}")
-                                list_delete.append(del_msg_2.message_id)
+                                await bot.send_message(message.from_user.id,
+                                                       f"Слова в которых допускались ошибки: "
+                                                       f"{message_(list_fails)}")
 
                             elif actual_percent <= max_percent_fails:
-                                del_msg = await bot.send_message(message.from_user.id,
-                                                                 f"Тест пройден. Ваш процент ответов - "
-                                                                 f"{str(100 - int(actual_percent))[0:5]}%")
-                                list_delete.append(del_msg.message_id)
+                                await bot.send_message(message.from_user.id,
+                                                       f"Тест пройден. Ваш процент ответов - "
+                                                       f"{str(100 - int(actual_percent))[0:5]}%")
 
-                                del_msg_2 = await bot.send_message(message.from_user.id,
-                                                                   f"Слова в которых допускались ошибки: "
-                                                                   f"{message_(list_fails)}")
-                                list_delete.append(del_msg_2.message_id)
+                                await bot.send_message(message.from_user.id,
+                                                       f"Слова в которых допускались ошибки: "
+                                                       f"{message_(list_fails)}")
 
     # Вывод на главное меню после последнего вопроса
     if count_questions == param_questions:
@@ -485,43 +477,48 @@ async def question_test(message: types.Message, state: FSMContext):
                 data_ = random_question("word", message.from_user.id, 0)
                 # example data_ --> # [3, ['Яблоко', 'Apple']]
 
-                match data_[0]:
-                    case int(3):
-                        # "3": "рус --> англ "
-                        del_msg = await bot.send_message(message.from_user.id,
-                                                         f"Как переводится слово {data_[1][0]}",
-                                                         reply_markup=types.ReplyKeyboardRemove())
-
+                match data_:
+                    case None:
+                        del_msg = await bot.send_message(message.from_user.id, f"Вы не указали один из параметров ")
                         list_delete.append(del_msg.message_id)
 
-                        await state.update_data(origin_para=data_[1])
-                        await state.update_data(question_state=data_[1][0])
-                        await state.update_data(answer_state=data_[1][1])
+                    case _:
+                        match data_[0]:
+                            case int(3):
+                                # "3": "рус --> англ "
+                                del_msg = await bot.send_message(message.from_user.id,
+                                                                 f"Как переводится слово {data_[1][0]}",
+                                                                 reply_markup=types.ReplyKeyboardRemove())
+                                list_delete.append(del_msg.message_id)
 
-                        count_questions += 1
-                        await state.update_data(count_questions=count_questions)
+                                await state.update_data(origin_para=data_[1])
+                                await state.update_data(question_state=data_[1][0])
+                                await state.update_data(answer_state=data_[1][1])
 
-                        status_ = 1
-                        await state.update_data(status_=status_)
-                        await QuestionParams.question_test.set()
+                                count_questions += 1
+                                await state.update_data(count_questions=count_questions)
 
-                    case int(4):
-                        # "4": "англ --> рус "
-                        del_msg = await bot.send_message(message.from_user.id,
-                                                         f"Как переводится слово {data_[1][1]}",
-                                                         reply_markup=types.ReplyKeyboardRemove())
-                        list_delete.append(del_msg.message_id)
+                                status_ = 1
+                                await state.update_data(status_=status_)
+                                await QuestionParams.question_test.set()
 
-                        await state.update_data(origin_para=data_[1])
-                        await state.update_data(question_state=data_[1][1])
-                        await state.update_data(answer_state=data_[1][0])
+                            case int(4):
+                                # "4": "англ --> рус "
+                                del_msg = await bot.send_message(message.from_user.id,
+                                                                 f"Как переводится слово {data_[1][1]}",
+                                                                 reply_markup=types.ReplyKeyboardRemove())
+                                list_delete.append(del_msg.message_id)
 
-                        count_questions += 1
-                        await state.update_data(count_questions=count_questions)
+                                await state.update_data(origin_para=data_[1])
+                                await state.update_data(question_state=data_[1][1])
+                                await state.update_data(answer_state=data_[1][0])
 
-                        status_ = 1
-                        await state.update_data(status_=status_)
-                        await QuestionParams.question_test.set()
+                                count_questions += 1
+                                await state.update_data(count_questions=count_questions)
+
+                                status_ = 1
+                                await state.update_data(status_=status_)
+                                await QuestionParams.question_test.set()
 
             case "Пройти тест: фразы ->":
                 data_ = random_question("phrase", message.from_user.id, 0)
@@ -736,9 +733,9 @@ async def user_settings_update(message: types.Message, state: FSMContext):
 
         case 1:
             try:
-                user_settings_update = state_data["user_settings_update"]
+                user_settings_update_ = state_data["user_settings_update"]
 
-                match user_settings_update:
+                match user_settings_update_:
 
                     case "Вопросы ->":
                         answer = int(answer)
