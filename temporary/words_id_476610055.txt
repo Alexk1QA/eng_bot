@@ -1,0 +1,11 @@
+Untracked - Не отслеживаетсья
+Tracked - Отслеживается
+Requirements - Требования
+Source - Источник
+Required - Требуется
+Response - Ответ
+Merge - Слияние
+Solve - Решать
+Avoiding - Избегание
+Logically - Логично
+Enumerate - Перечислить
