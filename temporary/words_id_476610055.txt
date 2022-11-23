@@ -9,3 +9,7 @@ Solve - Решать
 Avoiding - Избегание
 Logically - Логично
 Enumerate - Перечислить
+Advanced - Продвинутый
+Decades - Десятилетия
+Difficult - Сложно
+Tend - Тенденция
