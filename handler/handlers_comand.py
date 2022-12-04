@@ -15,7 +15,7 @@ async def start(message: types.Message):
                                "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
 
     await bot.send_message(message.from_user.id, f"{message_handlers.handlers_dict['start']}",
-                           reply_markup=keyboard_start.create_keyboadr(3))
+                           reply_markup=keyboard_start.create_keyboard(3))
     await bot.delete_message(message.chat.id, message.message_id)
 
     create_table = db2.DB(message.from_user.id)
