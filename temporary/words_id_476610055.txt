@@ -13,3 +13,10 @@ Advanced - Продвинутый
 Decades - Десятилетия
 Difficult - Сложно
 Tend - Тенденция
+Preparation - Подготовка
+Knowledge - Знания
+Spoken - Разговорный
+Execute - Выполнить
+Variable - Переменная
+Would - Будет
+Such - Такой
