@@ -1,4 +1,13 @@
 
+
+/.DS_Store
+.DS_Store
+/DB/.DS_Store
+DB/.DS_Store
+
+.gitignore
+
+
 .idea
 .env
 __pycache__

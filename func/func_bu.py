@@ -1,28 +1,38 @@
 from keyboard.keyboard_bu_inline import *
-from datetime import datetime, timedelta
-import datetime as dt
 from DB import db2
-import random
 
 
 def message_(list_):
-    """ Функция для формирования сообщения списка с неверными словами """
+    """ Function for generating a list message with incorrect words """
+    # Input example: - [['d2', 'd'], 'ee']] /// ['d2', 'd'] - pair word from DB /// 'ee' - answered our user
 
-    message_out = "\n\n"
-    count_word = 1
+    if type(list_[0][0]) == list:
+        message_out = "\n\n"
+        count_word = 1
 
-    for i in list_:
-        a = f"{count_word} - {i[0][0]} / {i[0][1]}. Вы ввели - «{i[1]}»"
-        message_out = f"{message_out + a} \n"
-        count_word += 1
+        for i in list_:
+            a = f"{count_word} - {i[0][0]} / {i[0][1]}. Вы ввели - «{i[1]}»"
+            message_out = f"{message_out + a} \n"
+            count_word += 1
 
-    return message_out
+        return message_out
+    else:
+
+        message_out = "\n\n"
+        count_word = 1
+
+        for i in list_:
+            a = f"{count_word} - {i} / {i}. Вы ввели - «{i[1]}»"
+            message_out = f"{message_out + a} \n"
+            count_word += 1
+
+        return message_out
 
 
 def chose_random_(user_id):
-    """ Данная функция формирует список после ввода юзером настроек для вывода теста
-        actual_dict_param отдает значения:
-        1 - За посл неделю, 2 - За все время, 3 - рус --> англ, 4 - англ --> рус """
+    """ This function generates a list after the user enters the settings for the test output
+        actual_dict_param gives the values:
+        1 - last week, 2 - all time, 3 - rus --> eng, 4 - eng --> rus """
 
     actual_dict_param = []
 
@@ -34,7 +44,8 @@ def chose_random_(user_id):
     return actual_dict_param
 
 
-def random_question(method_, user_id, mode_func):
+def random_question(method_, user_id, mode_func=None):
+    # Input example: "word", message.from_user.id, 0
 
     period_and_EN_or_RUS = chose_random_(user_id)
     # example period_and_EN_or_RUS --> [2, 3]
@@ -44,77 +55,25 @@ def random_question(method_, user_id, mode_func):
         return None
 
     else:
-        word_rus_data_ = f"{method_}_rus"
-        word_eng_data_ = f"{method_}_eng"
-        date_data = f"{method_}_time_add"
-
         data_base = db2.DB(user_id)
-        data_base.create_table()
 
-        word_rus_data = data_base.select_data(word_rus_data_)
-        word_eng_data = data_base.select_data(word_eng_data_)
-        date_data = data_base.select_data(date_data)
+        if mode_func == "download":
+            random_from_all = data_base.select_data_(method_=method_, pairs_all_or_one="all")
+            # with open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{user_id}.txt', 'w') as file:
+            with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
 
-        all_list_data = []
+                return file.writelines(f'{row[1]} - {row[0]}\n' for row in random_from_all)
 
-        if mode_func == 1:
-            period_and_EN_or_RUS = [2, 2]
+        else:
+            if int(period_and_EN_or_RUS[0]) == int(1):
 
-        if int(period_and_EN_or_RUS[0]) == int(1) or int(period_and_EN_or_RUS[0]) == int(2):
-            # Делаем перебор из слов за НЕДЕЛЮ
+                random_from_user_period = data_base.select_data_(method_=method_, word_during_period="user_period")
 
-            for j in word_rus_data:
-                if j[0] is None:
-                    pass
-                else:
-                    if int(period_and_EN_or_RUS[0]) == int(1):
-                        all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0],
-                                              date_data[word_rus_data.index(j)][0]])
-            # example [['Яблоко', 'Apple', 'Wed Nov  9 19:56:04 2022'], ['www', 'www', 'Wed Nov  9 19:56:32 2022']...]
+                return [int(period_and_EN_or_RUS[1]), random_from_user_period]
+                # Output: [3, [['Яблоко', 'Apple']]
 
-                    elif int(period_and_EN_or_RUS[0]) == int(2):
-                        all_list_data.append([j[0], word_eng_data[word_rus_data.index(j)][0]])
-                        # example [['Яблоко', 'Apple'], ['Машина', 'Car']...]
-            if mode_func == 1:
-                # with open(f'/Users/macbook/Desktop/english_bot/temporary/words_id_{user_id}.txt', 'w') as file:
-                with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
-                    file.writelines(f'{row[1]} - {row[0]}\n' for row in all_list_data)
+            elif int(period_and_EN_or_RUS[0]) == int(2):
 
-                return file
-
-            else:
-                if int(period_and_EN_or_RUS[0]) == int(1):
-
-                    param_day = "param_day"
-                    param_date = data_base.select_data(param_day)[0][0]
-
-                    mod_date = datetime.now() + timedelta(days=-param_date)
-                    data = str(mod_date.date())
-                    range_date_str = data[8:10] + data[4:8] + data[0:4]
-
-                    list_range = []
-
-                    for i in all_list_data:
-                        items_in_list = i[2][0:6] + "20" + i[2][6:8]
-
-                        range_date_str_ = dt.datetime.strptime(range_date_str, '%d-%m-%Y')
-                        items_in_list_ = dt.datetime.strptime(items_in_list, '%d-%m-%Y')
-
-                        if range_date_str_ <= items_in_list_:
-                            list_range.append([i[0], i[1]])
-
-                    random_data = random.choice(list_range)
-
-                    return_list = [int(period_and_EN_or_RUS[1]), random_data]
-
-                    return return_list
-                    # return_list -->[3, [['Яблоко', 'Apple']]
-
-                elif int(period_and_EN_or_RUS[0]) == int(2):
-
-                    random_data = random.choice(all_list_data)
-
-                    return_list = [int(period_and_EN_or_RUS[1]), random_data]
-
-                    return return_list
-                    # return_list -->[3, [['Яблоко', 'Apple']]
+                random_from_all = data_base.select_data_(method_=method_, pairs_all_or_one="one")
+                return [int(period_and_EN_or_RUS[1]), random_from_all]
+                # Output: [3, [['Яблоко', 'Apple']]
