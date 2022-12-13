@@ -70,7 +70,7 @@ def random_question(method_, user_id, mode_func=None):
         data_base = db2.DB(user_id)
 
         if mode_func == "download":
-            random_from_all = data_base.select_data_(method_=method_, pairs_all_or_one="all")
+            random_from_all = data_base.select_data_(method_1=method_, pairs_all_or_one="all")
             # with open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{user_id}.txt', 'w') as file:
             with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
 
