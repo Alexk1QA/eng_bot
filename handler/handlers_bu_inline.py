@@ -100,7 +100,6 @@ async def update_word(message: types.Message, state: FSMContext):
     answer = message.text
 
     state_data = await state.get_data()
-    del_msg = state_data["del_msg"]
     method_ = state_data["method"]
 
     data_base = db2.DB(message.chat.id)
@@ -131,13 +130,15 @@ async def update_word(message: types.Message, state: FSMContext):
         data_base.update_data_(column_="temp_data", where_data=3, data_updating=del_msg.message_id)
         data_base.update_data_(column_="temp_data", where_data=5, data_updating=1)
 
-        await delete_message(message.from_user.id, [data_base.select_data_(column_='temp_data', where_clmn="id", where_data=4)[0][0]])
+        await delete_message(message.from_user.id, [data_base.select_data_(column_='temp_data', where_clmn="id",
+                                                                           where_data=4)[0][0]])
 
     else:
         data_base.update_data_(column_="temp_data", where_data=4, data_updating=del_msg.message_id)
         data_base.update_data_(column_="temp_data", where_data=5, data_updating=0)
 
-        await delete_message(message.from_user.id, [data_base.select_data_(column_='temp_data', where_clmn="id", where_data=3)[0][0]])
+        await delete_message(message.from_user.id, [data_base.select_data_(column_='temp_data', where_clmn="id",
+                                                                           where_data=3)[0][0]])
 
     await state.finish()
 

@@ -1,6 +1,6 @@
-
 from datetime import datetime, timedelta
 import sqlite3
+import json
 
 # connect = sqlite3.connect("/Users/macbook/Desktop/english_bot_test/DB/eng_bot.accdb")
 connect = sqlite3.connect("/home/ubuntu/eng_bot/DB/eng_bot.accdb")
@@ -21,61 +21,55 @@ class DB:
                                          phrase_eng TEXT,
                                          phrase_rus TEXT,
                                          phrase_time_add timestamp,
-                                         param_questions int,
-                                         param_percent int,
-                                         status_ int,
-                                         param_day int,
-                                         param_answer int,
-                                         temp_data TEXT,
-                                         butt_dict_id int,
-                                         butt_dict_data TEXT,
-                                         butt_dict_upd_id int,
-                                         butt_dict_upd_data TEXT
+                                         params_user TEXT,
+                                         keyboard_boot int,
+                                         temp_data TEXT
                                          )''')
         connect.commit()
 
 # --------------------------------------------------------------------------------------------------------------------#
 # -----------------------------------------------func for handlers----------------------------------------------------#
 # --------------------------------------------------------------------------------------------------------------------#
-    def insert_data(self, method, data_rus, data_eng):
+    def insert_word_phrase(self, method, data_rus, data_eng):
 
         cursor.execute(
             f"INSERT INTO {self.id_user} ({f'{method}_rus'}, {f'{method}_eng'}, {f'{method}_time_add'})"
             f"VALUES ( ?, ?, ?)", (data_rus, data_eng, datetime.now()))
         connect.commit()
 
-    def insert_settings(self, param_questions, param_percent, status_, param_day, param_answer, temp_data, butt_dict,
-                        butt_dict_upd):
+    def insert_settings(self, params_user, status_, butt_dict, butt_dict_upd):
 
-        cursor.execute(
-          f"INSERT INTO {self.id_user} (param_questions, param_percent, status_, param_day, param_answer, temp_data)"
-          f"VALUES ( ?, ?, ?, ?, ?, ?)", (param_questions, param_percent, status_, param_day, param_answer, temp_data))
-        connect.commit()
+        list_ = [params_user, butt_dict, butt_dict_upd]
 
-        for i in butt_dict.items():
-            cursor.execute(
-                f"INSERT INTO {self.id_user} (butt_dict_id, butt_dict_data)"
-                f"VALUES ( ?, ? )", (i[0], i[1]))
-            connect.commit()
+        count_ = 0
 
-        for i in butt_dict_upd.items():
-            cursor.execute(
-                f"INSERT INTO {self.id_user} (butt_dict_upd_id, butt_dict_upd_data)"
-                f"VALUES ( ?, ? )", (i[0], i[1]))
-            connect.commit()
+        for items in list_:
+            if count_ == 0:
+                cursor.execute(
+                    f"INSERT INTO {self.id_user} (params_user, keyboard_boot)"
+                    f"VALUES ( ?, ? )", (items, status_))
+                connect.commit()
+                count_ += 1
+
+            else:
+                cursor.execute(
+                    f"INSERT INTO {self.id_user} ( keyboard_boot)"
+                    f"VALUES ( ? )", [items])
+                connect.commit()
 
 # -------------------------------------------------   SELECT DATA  ---------------------------------------------------#
-    def select_data_(self, column_=None, where_clmn="id", where_data=1, method_=None, word_during_period=None,
-                     all_=None, pairs_all_or_one=None):
+    def select_data_(self, column_=None, where_clmn="id", where_data=1, method_1=None, method_2=None,
+                     word_during_period=None, all_=None, pairs_all_or_one=None, output_para=None):
 
         if all_ == "on":
+
             cursor.execute(f"""SELECT {column_} FROM {self.id_user} WHERE {column_} is not Null """)
             return cursor.fetchall()
 
         if pairs_all_or_one == "all" or pairs_all_or_one == "one":
 
-            eng_data_ = f"{method_}_eng"
-            rus_data_ = f"{method_}_rus"
+            eng_data_ = f"{method_1}_eng"
+            rus_data_ = f"{method_1}_rus"
 
             if pairs_all_or_one == "one":
                 #  random one word pair
@@ -109,18 +103,17 @@ class DB:
                 return all_list_data
 
         if word_during_period == "user_period":
+            eng_data_ = f"{method_1}_eng"
+            rus_data_ = f"{method_1}_rus"
+            date_data = f"{method_1}_time_add"
 
-            eng_data_ = f"{method_}_eng"
-            rus_data_ = f"{method_}_rus"
-            date_data = f"{method_}_time_add"
-
-            cursor.execute(f"""SELECT param_day FROM {self.id_user} WHERE id = 1 """)
-            param_day_ = cursor.fetchone()[0]
+            cursor.execute(f"""SELECT params_user FROM {self.id_user} WHERE id = 1 """)
+            param_day_ = json.loads(cursor.fetchone()[0])["param_day"]
 
             cursor.execute(
                 f""" SELECT {eng_data_} 
                                    FROM {self.id_user} 
-                                   WHERE {date_data} >= '{datetime.now() + timedelta(days=-param_day_-1)}' 
+                                   WHERE {date_data} >= '{datetime.now() + timedelta(days=-param_day_ - 1)}' 
                                    ORDER BY RANDOM() LIMIT 1 """)
             word_eng_ = cursor.fetchone()
 
@@ -134,78 +127,30 @@ class DB:
             cursor.execute(f"""SELECT {column_} FROM {self.id_user} WHERE {where_clmn} = '{where_data}' """)
             return cursor.fetchall()
 
+        if output_para == "on":
+
+            column_eng = f"{method_1}_eng"
+            column_rus = f"{method_1}_rus"
+
+            where_clmn_ = f"{method_1}_{method_2}"
+
+            cursor.execute(f"""SELECT {column_eng}, {column_rus} FROM {self.id_user} WHERE {where_clmn_} = '{where_data}' """)
+            return cursor.fetchall()
+
 # -------------------------------------------------   UPDATE DATA  ---------------------------------------------------#
     def update_data_(self, column_=None, where_clmn="id", where_data=1, method_=None, data_updating=None):
 
         if method_ is not None:
             cursor.execute(f""" UPDATE {self.id_user} 
-                                        SET {f'word_{method_}'} = '{data_updating}' WHERE {f'word_{method_}'} = '{where_data}' """)
+                                SET {f'word_{method_}'} = '{data_updating}' 
+                                WHERE {f'word_{method_}'} = '{where_data}' """)
             return connect.commit()
 
-        cursor.execute(f""" UPDATE {self.id_user} SET '{column_}' = '{data_updating}' WHERE {where_clmn} = '{where_data}' """)
+        cursor.execute(
+            f""" UPDATE {self.id_user} SET '{column_}' = '{data_updating}' WHERE {where_clmn} = '{where_data}' """)
         connect.commit()
 
 # -------------------------------------------------   DELETE DATA  ---------------------------------------------------#
     def delete_data(self, word):
         cursor.execute(f""" DELETE FROM {self.id_user} WHERE word_eng = '{word}' """)
         connect.commit()
-
-# --------------------------------------------------------------------------------------------------------------------#
-# --------------------------------------------func for inline keyboard------------------------------------------------#
-# --------------------------------------------------------------------------------------------------------------------#
-
-    def status_update(self, data_updating):
-        cursor.execute(f""" UPDATE {self.id_user} SET status_ = '{data_updating}' WHERE id = 1 """)
-        connect.commit()
-
-    def butt_dict_update(self, data_updating):
-
-        for i in data_updating.items():
-            cursor.execute(f""" UPDATE {self.id_user} SET butt_dict_data = '{i[1]}' 
-                                                      WHERE butt_dict_id = '{int(i[0])}' """)
-            connect.commit()
-
-    def butt_dict_upd_update(self, data_updating):
-        for i in data_updating.items():
-            cursor.execute(f""" UPDATE {self.id_user} SET butt_dict_upd_data = '{i[1]}' 
-                                                      WHERE butt_dict_upd_id = '{int(i[0])}' """)
-            connect.commit()
-
-    def status_select(self):
-        cursor.execute(f"""SELECT status_ FROM {self.id_user} WHERE status_ is not Null """)
-        status_ = cursor.fetchall()
-        return status_
-
-    def butt_dict_select(self):
-
-        cursor.execute(f"""SELECT butt_dict_id FROM {self.id_user} WHERE butt_dict_id is not Null """)
-        butt_dict_id = cursor.fetchall()
-
-        cursor.execute(f"""SELECT butt_dict_data FROM {self.id_user} WHERE butt_dict_data is not Null """)
-        butt_dict_data = cursor.fetchall()
-
-        butt_dict = {}
-
-        for i in butt_dict_id:
-            butt_dict[f"{i[0]}"] = f"{butt_dict_data[butt_dict_id.index(i)][0]}"
-
-        return butt_dict
-
-    def butt_dict_upd_select(self):
-
-        cursor.execute(f"""SELECT butt_dict_upd_id FROM {self.id_user} WHERE butt_dict_upd_id is not Null """)
-        butt_dict_id = cursor.fetchall()
-
-        cursor.execute(f"""SELECT butt_dict_upd_data FROM {self.id_user} WHERE butt_dict_upd_data is not Null """)
-        butt_dict_data = cursor.fetchall()
-
-        butt_dict_upd = {}
-
-        for i in butt_dict_id:
-            butt_dict_upd[f"{i[0]}"] = f"{butt_dict_data[butt_dict_id.index(i)][0]}"
-
-        return butt_dict_upd
-
-# --------------------------------------------------------------------------------------------------------------------#
-# -------------------------------------------------func in development------------------------------------------------#
-# --------------------------------------------------------------------------------------------------------------------#

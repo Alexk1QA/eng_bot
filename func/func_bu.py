@@ -2,11 +2,24 @@ from keyboard.keyboard_bu_inline import *
 from DB import db2
 
 
-def message_(list_):
+def message_(list_, word_=None):
     """ Function for generating a list message with incorrect words """
     # Input example: - [['d2', 'd'], 'ee']] /// ['d2', 'd'] - pair word from DB /// 'ee' - answered our user
 
-    if type(list_[0][0]) == list:
+    if type(list_[0]) == tuple:
+
+        message_out = f"\n\n"
+        count_word = 1
+
+        for i in list_:
+            a = f"{count_word} - {i[0]} / {i[1]}"
+            message_out = f"{message_out + a} \n"
+            count_word += 1
+        space = "\n"
+        message_out = f"""{message_out + f"{space}Вы добавляете {word_}"}"""
+        return message_out
+
+    elif type(list_[0][0]) == list:
         message_out = "\n\n"
         count_word = 1
 
@@ -17,7 +30,6 @@ def message_(list_):
 
         return message_out
     else:
-
         message_out = "\n\n"
         count_word = 1
 
@@ -67,13 +79,13 @@ def random_question(method_, user_id, mode_func=None):
         else:
             if int(period_and_EN_or_RUS[0]) == int(1):
 
-                random_from_user_period = data_base.select_data_(method_=method_, word_during_period="user_period")
+                random_from_user_period = data_base.select_data_(method_1=method_, word_during_period="user_period")
 
                 return [int(period_and_EN_or_RUS[1]), random_from_user_period]
                 # Output: [3, [['Яблоко', 'Apple']]
 
             elif int(period_and_EN_or_RUS[0]) == int(2):
 
-                random_from_all = data_base.select_data_(method_=method_, pairs_all_or_one="one")
+                random_from_all = data_base.select_data_(method_1=method_, pairs_all_or_one="one")
                 return [int(period_and_EN_or_RUS[1]), random_from_all]
                 # Output: [3, [['Яблоко', 'Apple']]

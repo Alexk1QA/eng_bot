@@ -1,5 +1,6 @@
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
+from keyboard.buttons_menu import *
 from message.message_handlers import *
 from aiogram import types, Dispatcher
 from log.logging import logger_
@@ -15,9 +16,10 @@ async def add_word(message: types.Message, state: FSMContext):
 
     data_base = db2.DB(message.from_user.id)
 
-    param_answer = data_base.select_data_(column_="param_answer", where_clmn="id", where_data=1)[0][0]
+    mode_questions = json.loads(data_base.select_data_(
+                               column_="params_user", where_clmn="id", where_data=1)[0][0])["mode_questions"]
 
-    await state.update_data(mode_ask=param_answer)
+    await state.update_data(mode_questions=mode_questions)
 
     await bot.delete_message(message.chat.id, message.message_id)
 
@@ -34,21 +36,33 @@ async def add_word(message: types.Message, state: FSMContext):
 
     keyboard_cancel = Keyboard(["Отмена ->"])
 
-    match state_data["mode_ask"]:
-        case 0:
-            del_msg = await bot.send_message(message.from_user.id,
-                                             f"""{handlers_dict[f'add_{state_data["method_add_data"]}_first']}""",
-                                             reply_markup=keyboard_cancel.create_keyboard(3))
+    mode_add_word = json.loads(data_base.select_data_(
+                                column_="params_user", where_clmn="id", where_data=1)[0][0])["mode_add_word"]
+    await state.update_data(mode_add_word=mode_add_word)
 
-            await state.update_data(list_delete=[message.message_id, del_msg.message_id])
+    del_msg_1 = 0
+    match mode_add_word:
+        case "ask":
+            del_msg_1 = await bot.send_message(message.from_user.id, f"Режим добавления слов: Ручной")
+
+        case "auto":
+            del_msg_1 = await bot.send_message(message.from_user.id, f"Режим добавления слов: Автоматический")
+
+    match state_data["mode_questions"]:
+        case "rus":
+            del_msg_2 = await bot.send_message(message.from_user.id,
+                                               f"""{handlers_dict[f'add_{state_data["method_add_data"]}_first']}""",
+                                               reply_markup=keyboard_cancel.create_keyboard(3))
+
+            await state.update_data(list_delete=[message.message_id, del_msg_1.message_id, del_msg_2.message_id])
             await QuestionParams.add_word_first.set()
 
-        case 1:
-            del_msg = await bot.send_message(message.from_user.id,
-                                             f"""{handlers_dict[f'add_{state_data["method_add_data"]}_last']}""",
-                                             reply_markup=keyboard_cancel.create_keyboard(3))
+        case "eng":
+            del_msg_2 = await bot.send_message(message.from_user.id,
+                                               f"""{handlers_dict[f'add_{state_data["method_add_data"]}_last']}""",
+                                               reply_markup=keyboard_cancel.create_keyboard(3))
 
-            await state.update_data(list_delete=[message.message_id, del_msg.message_id])
+            await state.update_data(list_delete=[message.message_id, del_msg_1.message_id, del_msg_2.message_id])
             await QuestionParams.add_word_first.set()
 
 
@@ -57,11 +71,10 @@ async def add_word_first(message: types.Message, state: FSMContext):
 
     answer = message.text
 
-    if answer == "Отмена ->":
+    if answer == "Отмена ->" or answer == "Готово ->":
         await bot.delete_message(message.chat.id, message.message_id)
 
-        keyboard_start = Keyboard(["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
-                                   "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
+        keyboard_start = Keyboard(buttons_main_menu)
 
         await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                reply_markup=keyboard_start.create_keyboard(3))
@@ -73,35 +86,39 @@ async def add_word_first(message: types.Message, state: FSMContext):
         await state.finish()
 
     else:
-
         state_data = await state.get_data()
 
-        method_add_data = state_data["method_add_data"]
-
-        # # --- --- --- --- --- --- --- --- --- ---  Location  for  checking words  --- --- --- --- --- --- --- --- ---
-        # # --- --- --- --- --- --- --- --- --- --- --- --- ---  Soon   --- --- --- --- --- --- --- --- --- --- --- ---
-        #
-        # data_base = db2.DB(message.from_user.id)
-        #
-        # word_check = data_base.select_data_(f"{method_add_data}_eng", answer)[0][0]
-        #
-        # try:
-        #     if answer == word_check:
-        #
-        #         print(f"Есть совпадение {answer} - {word_check}")
-        #
-        # # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-        # except IndexError:
-        #     print(IndexError)
-
         list_delete = state_data["list_delete"]
+
+        method_add_data = state_data["method_add_data"]
+        # example -> word
+        mode_questions = state_data["mode_questions"]
+        # example -> eng
+
+        # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+        data_base = db2.DB(message.from_user.id)
+
+        try:
+            search_para = data_base.select_data_(method_1=method_add_data,
+                                                 method_2=mode_questions, where_data=answer, output_para="on")
+
+            del_msg = await bot.send_message(message.from_user.id, f"Обратите внимание, "
+                                                                   f"найдены совпадения: "
+                                                                   f"{message_(search_para, word_=answer)}")
+            list_delete.append(del_msg.message_id)
+
+        except Exception as ex:
+            logger_(message.from_user.id, f"file: handlers/add_word_quit_2 /// {ex}")
+
+        # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
         list_delete.append(message.message_id)
 
         keyboard_cancel = Keyboard(["Отмена ->"])
 
-        match state_data["mode_ask"]:
-            case 0:
+        match state_data["mode_questions"]:
+
+            case "rus":
                 await state.update_data(rus_add_data=answer)
 
                 del_msg = await bot.send_message(message.from_user.id,
@@ -112,7 +129,7 @@ async def add_word_first(message: types.Message, state: FSMContext):
                 await state.update_data(list_delete=list_delete)
                 await QuestionParams.add_word_last.set()
 
-            case 1:
+            case "eng":
                 await state.update_data(eng_add_data=answer)
 
                 del_msg = await bot.send_message(message.from_user.id,
@@ -132,8 +149,7 @@ async def add_word_last(message: types.Message, state: FSMContext):
     if answer == "Отмена ->":
         await bot.delete_message(message.chat.id, message.message_id)
 
-        keyboard_start = Keyboard(["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
-                                   "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
+        keyboard_start = Keyboard(buttons_main_menu)
 
         await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                reply_markup=keyboard_start.create_keyboard(3))
@@ -149,10 +165,10 @@ async def add_word_last(message: types.Message, state: FSMContext):
 
         list_delete = state_data["list_delete"]
 
-        match state_data["mode_ask"]:
-            case 0:
+        match state_data["mode_questions"]:
+            case "rus":
                 await state.update_data(eng_add_data=answer)
-            case 1:
+            case "eng":
                 await state.update_data(rus_add_data=answer)
 
         state_data_ = await state.get_data()
@@ -161,20 +177,58 @@ async def add_word_last(message: types.Message, state: FSMContext):
         rus_add_data = state_data_["rus_add_data"]
         eng_add_data = state_data_["eng_add_data"]
         method_add_data = state_data_["method_add_data"]
+        mode_add_word = state_data_["mode_add_word"]
 
         data_base = db2.DB(message.from_user.id)
-        data_base.insert_data(method_add_data, rus_add_data, eng_add_data)
+        data_base.insert_word_phrase(method_add_data, rus_add_data, eng_add_data)
 
-        keyboard_quit = Keyboard(["Нет", "Да"])
+        if mode_add_word == "ask":
+            keyboard_quit = Keyboard(["Нет", "Да"])
 
-        del_mag = await bot.send_message(message.from_user.id, f"Пара {rus_add_data} - {eng_add_data} "
-                                                               f"была добавлена\n"
-                                                               f"{handlers_dict[f'add_{method_add_data}_quit']}",
-                                         reply_markup=keyboard_quit.create_keyboard(3))
-        list_delete.append(del_mag.message_id)
+            del_mag = await bot.send_message(message.from_user.id, f"Пара {rus_add_data} - {eng_add_data} "
+                                                                   f"была добавлена\n"
+                                                                   f"{handlers_dict[f'add_{method_add_data}_quit']}",
+                                             reply_markup=keyboard_quit.create_keyboard(3))
+            list_delete.append(del_mag.message_id)
 
-        await state.update_data(list_delete=list_delete)
-        await QuestionParams.add_word_quit.set()
+            await state.update_data(list_delete=list_delete)
+            await QuestionParams.add_word_quit.set()
+
+        elif mode_add_word == "auto":
+            try:
+                del_msg = state_data["add_word_quit_await"]
+                list_delete.append(del_msg.message_id)
+            except Exception as ex:
+                logger_(message.from_user.id, f"file: handlers/add_word_quit_2 /// {ex}")
+
+            state_data = await state.get_data()
+
+            keyboard_cancel = Keyboard(["Готово ->"])
+
+            match state_data["mode_questions"]:
+                case "rus":
+                    await state.update_data(rus_add_data=answer)
+
+                    del_msg = await bot.send_message(message.from_user.id,
+                                                     f"""
+                                                     {handlers_dict[f'add_{state_data["method_add_data"]}_first']}""",
+                                                     reply_markup=keyboard_cancel.create_keyboard(3))
+                    list_delete.append(del_msg.message_id)
+
+                    await state.update_data(list_delete=list_delete)
+                    await QuestionParams.add_word_last.set()
+
+                case "eng":
+                    await state.update_data(eng_add_data=answer)
+
+                    del_msg = await bot.send_message(message.from_user.id,
+                                                     f"""
+                                                     {handlers_dict[f'add_{state_data["method_add_data"]}_last']}""",
+                                                     reply_markup=keyboard_cancel.create_keyboard(3))
+                    list_delete.append(del_msg.message_id)
+
+            await state.update_data(list_delete=list_delete)
+            await QuestionParams.add_word_first.set()
 
 
 async def add_word_quit(message: types.Message, state: FSMContext):
@@ -196,12 +250,10 @@ async def add_word_quit(message: types.Message, state: FSMContext):
 
             except Exception as ex:
                 logger_(message.from_user.id, f"file: handlers/add_word_quit_1 /// {ex}")
-                pass
 
             await state.update_data(list_delete=list_delete)
 
-            keyboard_start = Keyboard(["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
-                                       "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
+            keyboard_start = Keyboard(buttons_main_menu)
 
             await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                    reply_markup=keyboard_start.create_keyboard(3))
@@ -218,14 +270,13 @@ async def add_word_quit(message: types.Message, state: FSMContext):
                 list_delete.append(del_msg.message_id)
             except Exception as ex:
                 logger_(message.from_user.id, f"file: handlers/add_word_quit_2 /// {ex}")
-                pass
 
             state_data = await state.get_data()
 
             keyboard_cancel = Keyboard(["Отмена ->"])
 
-            match state_data["mode_ask"]:
-                case 0:
+            match state_data["mode_questions"]:
+                case "rus":
                     await state.update_data(rus_add_data=answer)
 
                     del_msg = await bot.send_message(message.from_user.id,
@@ -237,7 +288,7 @@ async def add_word_quit(message: types.Message, state: FSMContext):
                     await state.update_data(list_delete=list_delete)
                     await QuestionParams.add_word_last.set()
 
-                case 1:
+                case "eng":
                     await state.update_data(eng_add_data=answer)
 
                     del_msg = await bot.send_message(message.from_user.id,
@@ -270,7 +321,6 @@ async def start_test(message: types.Message, state: FSMContext):
                 message_print = "фраз"
     except Exception as ex:
         logger_(message.from_user.id, f"file: handlers/start_test /// {ex}")
-        pass
 
     if len_data < 10:
         await bot.send_message(message.from_user.id, f"Минимальное значение {message_print} для начала теста - 10.\n"
@@ -278,10 +328,12 @@ async def start_test(message: types.Message, state: FSMContext):
         await bot.delete_message(message.chat.id, message.message_id)
 
     else:
-        await state.update_data(param_questions=int(data_base.select_data_(column_="param_questions",
-                                                                           where_clmn="id", where_data=1)[0][0]))
-        await state.update_data(param_percent=int(data_base.select_data_(column_="param_percent",
-                                                                         where_clmn="id", where_data=1)[0][0]))
+        await state.update_data(param_questions=int(json.loads(data_base.select_data_(
+                                column_="params_user")[0][0])["param_questions"]))
+
+        await state.update_data(param_percent=int(json.loads(data_base.select_data_(
+                                column_="params_user", where_clmn="id", where_data=1)[0][0])["param_percent"]))
+
         await state.update_data(count_fails=0)
         await state.update_data(count_questions=0)
         await state.update_data(status_=0)
@@ -319,7 +371,6 @@ async def question_test(message: types.Message, state: FSMContext):
 
     except Exception as ex:
         logger_(message.from_user.id, f"file: handlers/question_test_1 /// {ex}")
-        pass
 
     param_questions = int(state_data["param_questions"])
     param_percent = int(state_data["param_percent"])
@@ -407,8 +458,7 @@ async def question_test(message: types.Message, state: FSMContext):
         match answer:
             case "Назад ->":
 
-                keyboard_start = Keyboard(["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
-                                           "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
+                keyboard_start = Keyboard(buttons_main_menu)
 
                 await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                        reply_markup=keyboard_start.create_keyboard(3))
@@ -421,8 +471,7 @@ async def question_test(message: types.Message, state: FSMContext):
 
             case _:
 
-                keyboard_start = Keyboard(["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
-                                           "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
+                keyboard_start = Keyboard(buttons_main_menu)
 
                 await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                        reply_markup=keyboard_start.create_keyboard(3))
@@ -444,7 +493,7 @@ async def question_test(message: types.Message, state: FSMContext):
 
         # # --- --- --- --- --- --- --- --- ---  Location  for  checking words from replay mode --- --- --- --- --- ---
         # # --- --- --- --- --- --- --- --- --- --- --- --- ---  Soon   --- --- --- --- --- --- --- --- --- --- --- ---
-        # # Check data_
+        # #                                                   Check data_
 
                 match data_:
                     case None:
@@ -540,10 +589,8 @@ async def user_settings(message: types.Message, state: FSMContext):
     data_base = db2.DB(message.from_user.id)
 
     await state.update_data(user_settings_status=0)
-    await state.update_data(list_delete_usr_set_upd=[])
 
-    keyboard_settings = Keyboard(["Вопросы ->", "Процент ошибок ->", "Ручной режим ->", "Добавление слов ->",
-                                  "Скачать слова ->", "Скачать фразы ->", "Назад ->"])
+    keyboard_settings = Keyboard(buttons_settings_menu)
 
     len_dict_word = 0
     len_dict_phrase = 0
@@ -554,26 +601,38 @@ async def user_settings(message: types.Message, state: FSMContext):
     except Exception as ex:
         logger_(message.from_user.id, f"file: handlers/user_settings /// {ex}")
 
-    param_answer = data_base.select_data_(column_='param_answer', where_clmn='id', where_data=1)[0][0]
+    params_user = json.loads(data_base.select_data_(
+                             column_="params_user", where_clmn="id", where_data=1)[0][0])
 
-    match param_answer:
-        case 0:
-            param_answer = "rus --> Eng"
-        case 1:
-            param_answer = "Eng --> rus"
+    mode_questions = params_user["mode_questions"]
 
-    await bot.send_message(message.from_user.id, f"{handlers_dict[f'user_settings']}\n\n"
-                                                 f"Количество вопросов: "
-                                                 f"{data_base.select_data_(column_='param_questions')[0][0]}\n"
-                                                 f"Процент ошибок: "
-                                                 f"{data_base.select_data_(column_='param_percent')[0][0]}%\n"
-                                                 f"Ручной период для теста: "
-                                                 f"{data_base.select_data_(column_='param_day')[0][0]} дней\n"
-                                                 f"Порядок добавления слов: {param_answer}\n\n"
-                                                 f"Всего слов добавлено: {len_dict_word}\n"
-                                                 f"Всего фраз добавлено: {len_dict_phrase}\n",
-                           reply_markup=keyboard_settings.create_keyboard(4))
+    match mode_questions:
+        case "rus":
+            mode_questions = "rus --> Eng"
+        case "eng":
+            mode_questions = "Eng --> rus"
 
+    mode_add_word = params_user["mode_add_word"]
+    match mode_add_word:
+        case "ask":
+            mode_add_word = "Ручной"
+        case "auto":
+            mode_add_word = "Автоматический"
+
+    del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict[f'user_settings']}\n\n"
+                                     f"Количество вопросов: "
+                                     f"{params_user['param_questions']}\n"
+                                     f"Процент ошибок: "
+                                     f"{params_user['param_percent']}%\n"
+                                     f"Ручной период для теста: "
+                                     f"{params_user['param_day']} дней\n"
+                                     f"Порядок добавления слов: {mode_questions}\n"
+                                     f"Режим добавления слов: {mode_add_word}\n\n"
+                                     f"Всего слов добавлено: {len_dict_word}\n"
+                                     f"Всего фраз добавлено: {len_dict_phrase}\n",
+                                     reply_markup=keyboard_settings.create_keyboard(4))
+
+    await state.update_data(list_delete_usr_set_upd=[del_msg.message_id])
     await QuestionParams.user_settings_update.set()
 
 
@@ -584,6 +643,9 @@ async def user_settings_update(message: types.Message, state: FSMContext):
 
     data_base = db2.DB(message.from_user.id)
 
+    params_user = json.loads(data_base.select_data_(
+                               column_="params_user", where_clmn="id", where_data=1)[0][0])
+
     state_data = await state.get_data()
 
     list_delete_usr_set_upd = state_data["list_delete_usr_set_upd"]
@@ -593,157 +655,188 @@ async def user_settings_update(message: types.Message, state: FSMContext):
         user_settings_status = int(state_data["user_settings_status"])
     except Exception as ex:
         logger_(message.from_user.id, f"file: handlers/user_settings_update_1 /// {ex}")
-
         user_settings_status = 0
 
     match user_settings_status:
         case 0:
-            match answer:
-                case "Назад ->":
 
-                    keyboard_start = Keyboard(["Добавить слово ->", "Добавить фразу ->", "Пройти тест: слова ->",
-                                               "Пройти тест: фразы ->", "Повторение слова ->", "Настройки ->"])
+            if answer == buttons_settings_menu[-1]:
+                keyboard_start = Keyboard(buttons_main_menu)
 
-                    await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
-                                           reply_markup=keyboard_start.create_keyboard(3))
+                await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
+                                       reply_markup=keyboard_start.create_keyboard(3))
 
-                    finally_state_data = await state.get_data()
+                finally_state_data = await state.get_data()
 
-                    await delete_message(message.chat.id, finally_state_data["list_delete_usr_set_upd"])
+                await delete_message(message.chat.id, finally_state_data["list_delete_usr_set_upd"])
 
+                await bot.delete_message(message.chat.id, message.message_id)
+                await state.finish()
+
+            elif answer == buttons_settings_menu[0]:
+                del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_q']}")
+                list_delete_usr_set_upd.append(del_msg.message_id)
+
+                await state.update_data(user_settings_status=1)
+                await state.update_data(user_settings_update=answer)
+                await QuestionParams.user_settings_update.set()
+
+            elif answer == buttons_settings_menu[1]:
+                del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_%']}")
+                list_delete_usr_set_upd.append(del_msg.message_id)
+
+                await state.update_data(user_settings_status=1)
+                await state.update_data(user_settings_update=answer)
+                await QuestionParams.user_settings_update.set()
+
+            elif answer == buttons_settings_menu[2]:
+                del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_d']}")
+                list_delete_usr_set_upd.append(del_msg.message_id)
+
+                await state.update_data(user_settings_status=1)
+                await state.update_data(user_settings_update=answer)
+                await QuestionParams.user_settings_update.set()
+
+            elif answer == buttons_settings_menu[3]:
+                keyboard_answer = Keyboard(["rus ->", "Eng ->"])
+
+                del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_a']}",
+                                                 reply_markup=keyboard_answer.create_keyboard(3))
+                list_delete_usr_set_upd.append(del_msg.message_id)
+
+                await state.update_data(user_settings_status=1)
+                await state.update_data(user_settings_update=answer)
+                await QuestionParams.user_settings_update.set()
+
+            elif answer == buttons_settings_menu[4]:
+                keyboard_answer = Keyboard(["Ручной ->", "Авто ->"])
+
+                del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_m']}",
+                                                 reply_markup=keyboard_answer.create_keyboard(3))
+                list_delete_usr_set_upd.append(del_msg.message_id)
+
+                await state.update_data(user_settings_status=1)
+                await state.update_data(user_settings_update=answer)
+                await QuestionParams.user_settings_update.set()
+
+            elif answer == buttons_settings_menu[5]:
+                try:
+                    random_question("word", message.from_user.id, mode_func="download")
+
+                # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
+                    doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
+                    await bot.send_document(message.from_user.id, doc)
                     await bot.delete_message(message.chat.id, message.message_id)
-                    await state.finish()
 
-                case "Вопросы ->":
-                    del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_q']}")
+                except Exception as ex:
+                    del_msg = await bot.send_message(message.from_user.id, f"У Вас нет слов для скачивания ")
                     list_delete_usr_set_upd.append(del_msg.message_id)
 
-                    await state.update_data(user_settings_status=1)
-                    await state.update_data(user_settings_update=answer)
-                    await QuestionParams.user_settings_update.set()
+                    logger_(message.from_user.id, f"file: handlers/user_settings_update_2 /// {ex}")
 
-                case "Процент ошибок ->":
-                    del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_%']}")
+            elif answer == buttons_settings_menu[6]:
+                try:
+                    random_question("phrase", message.from_user.id, mode_func="download")
+                # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
+                    doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
+                    await bot.send_document(message.from_user.id, doc)
+                    await bot.delete_message(message.chat.id, message.message_id)
+
+                except Exception as ex:
+                    del_msg = await bot.send_message(message.from_user.id, f"У Вас нет фраз для скачивания ")
                     list_delete_usr_set_upd.append(del_msg.message_id)
 
-                    await state.update_data(user_settings_status=1)
-                    await state.update_data(user_settings_update=answer)
-                    await QuestionParams.user_settings_update.set()
+                    logger_(message.from_user.id, f"file: handlers/user_settings_update_3 /// {ex}")
 
-                case "Ручной режим ->":
-                    del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_d']}")
-                    list_delete_usr_set_upd.append(del_msg.message_id)
-
-                    await state.update_data(user_settings_status=1)
-                    await state.update_data(user_settings_update=answer)
-                    await QuestionParams.user_settings_update.set()
-
-                case "Добавление слов ->":
-                    keyboard_answer = Keyboard(["rus ->", "Eng ->"])
-
-                    del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict['user_settings_update_a']}",
-                                                     reply_markup=keyboard_answer.create_keyboard(3))
-                    list_delete_usr_set_upd.append(del_msg.message_id)
-
-                    await state.update_data(user_settings_status=1)
-                    await state.update_data(user_settings_update=answer)
-                    await QuestionParams.user_settings_update.set()
-
-                case "Скачать слова ->":
-                    try:
-                        random_question("word", message.from_user.id, mode_func="download")
-
-                        # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
-                        doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
-                        await bot.send_document(message.from_user.id, doc)
-                        await bot.delete_message(message.chat.id, message.message_id)
-
-                    except Exception as ex:
-                        del_msg = await bot.send_message(message.from_user.id, f"У Вас нет слов для скачивания ")
-                        list_delete_usr_set_upd.append(del_msg.message_id)
-
-                        logger_(message.from_user.id, f"file: handlers/user_settings_update_2 /// {ex}")
-
-                case "Скачать фразы ->":
-                    try:
-                        random_question("phrase", message.from_user.id, mode_func="download")
-                        # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
-                        doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
-                        await bot.send_document(message.from_user.id, doc)
-                        await bot.delete_message(message.chat.id, message.message_id)
-
-                    except Exception as ex:
-                        del_msg = await bot.send_message(message.from_user.id, f"У Вас нет фраз для скачивания ")
-                        list_delete_usr_set_upd.append(del_msg.message_id)
-
-                        logger_(message.from_user.id, f"file: handlers/user_settings_update_3 /// {ex}")
-
-                case _:
-                    del_msg = await bot.send_message(message.from_user.id, f"Выберите одну из опций ниже ⬇️⬇️⬇️")
-                    list_delete_usr_set_upd.append(del_msg.message_id)
+            else:
+                del_msg = await bot.send_message(message.from_user.id, f"Выберите одну из опций ниже ⬇️⬇️⬇️")
+                list_delete_usr_set_upd.append(del_msg.message_id)
 
             await state.update_data(list_delete_usr_set_upd=list_delete_usr_set_upd)
 
         case 1:
             try:
-                match state_data["user_settings_update"]:
+                if state_data["user_settings_update"] == buttons_settings_menu[0]:
+                    del_msg = await bot.send_message(message.from_user.id,
+                                                     f"{handlers_dict['user_settings_update_accept_q']} - {answer}")
+                    list_delete_usr_set_upd.append(del_msg.message_id)
 
-                    case "Вопросы ->":
+                    params_user["param_questions"] = int(answer)
 
-                        del_msg = await bot.send_message(message.from_user.id,
-                                                         f"{handlers_dict['user_settings_update_accept_q']} - {answer}")
+                    await state.update_data(user_settings_status=0)
+                    user_settings_status = 1
+
+                elif state_data["user_settings_update"] == buttons_settings_menu[1]:
+                    if int(answer) > 100:
+                        del_msg = await bot.send_message(message.from_user.id, f"Вводите число от 0 до 100")
                         list_delete_usr_set_upd.append(del_msg.message_id)
-
-                        data_base.update_data_(column_="param_questions", data_updating=int(answer))
 
                         await state.update_data(user_settings_status=0)
                         user_settings_status = 1
 
-                    case "Процент ошибок ->":
+                    else:
 
-                        if int(answer) > 100:
-                            del_msg = await bot.send_message(message.from_user.id, f"Вводите число от 0 до 100")
-                            list_delete_usr_set_upd.append(del_msg.message_id)
-
-                            await state.update_data(user_settings_status=0)
-                            user_settings_status = 1
-
-                        else:
-                            data_base.update_data_(column_="param_percent", data_updating=int(answer))
-                            del_msg = await bot.send_message(message.from_user.id,
-                                                             f"{handlers_dict['user_settings_update_accept_%']} - "
-                                                             f"{answer}%")
-                            list_delete_usr_set_upd.append(del_msg.message_id)
-
-                            await state.update_data(user_settings_status=0)
-                            user_settings_status = 1
-
-                    case "Ручной режим ->":
+                        params_user["param_percent"] = int(answer)
 
                         del_msg = await bot.send_message(message.from_user.id,
-                                                         f"{handlers_dict['user_settings_update_accept_d']} - {answer}")
+                                                         f"{handlers_dict['user_settings_update_accept_%']} - "
+                                                         f"{answer}%")
                         list_delete_usr_set_upd.append(del_msg.message_id)
-
-                        data_base.update_data_(column_="param_day", data_updating=int(answer))
 
                         await state.update_data(user_settings_status=0)
                         user_settings_status = 1
 
-                    case "Добавление слов ->":
+                elif state_data["user_settings_update"] == buttons_settings_menu[2]:
+                    del_msg = await bot.send_message(message.from_user.id,
+                                                     f"{handlers_dict['user_settings_update_accept_d']} - {answer}")
+                    list_delete_usr_set_upd.append(del_msg.message_id)
+
+                    params_user["param_day"] = int(answer)
+
+                    await state.update_data(user_settings_status=0)
+                    user_settings_status = 1
+
+                elif state_data["user_settings_update"] == buttons_settings_menu[3] or \
+                        state_data["user_settings_update"] == buttons_settings_menu[4]:
+
+                    keyboard_settings = Keyboard(buttons_settings_menu)
+
+                    if answer == "rus ->" or answer == "Eng ->":
 
                         if answer == "rus ->":
-                            data_base.update_data_(column_="param_answer", data_updating=0)
+                            params_user["mode_questions"] = "rus"
 
                         elif answer == "Eng ->":
-                            data_base.update_data_(column_="param_answer", data_updating=1)
-
-                        buttons = ["Вопросы ->", "Процент ошибок ->", "Ручной режим ->", "Добавление слов ->",
-                                   "Скачать слова ->", "Скачать фразы ->", "Назад ->"]
-
-                        keyboard_settings = Keyboard(buttons)
+                            params_user["mode_questions"] = "eng"
 
                         del_msg = await bot.send_message(message.from_user.id,
-                                                         f"{handlers_dict['user_settings_update_accept_a']} - {answer}",
+                                                         f"{handlers_dict['user_settings_update_accept_a']}"
+                                                         f" - {answer}",
+                                                         reply_markup=keyboard_settings.create_keyboard(4))
+                        list_delete_usr_set_upd.append(del_msg.message_id)
+
+                        await state.update_data(user_settings_status=0)
+                        user_settings_status = 1
+
+                    elif answer == "Ручной ->" or answer == "Авто ->":
+
+                        if answer == "Ручной ->":
+                            params_user["mode_add_word"] = "ask"
+
+                        elif answer == "Авто ->":
+                            params_user["mode_add_word"] = "auto"
+
+                        del_msg = await bot.send_message(message.from_user.id,
+                                                         f"{handlers_dict['user_settings_update_accept_m']}"
+                                                         f" - {answer}",
+                                                         reply_markup=keyboard_settings.create_keyboard(4))
+                        list_delete_usr_set_upd.append(del_msg.message_id)
+
+                        await state.update_data(user_settings_status=0)
+                        user_settings_status = 1
+
+                    else:
+                        del_msg = await bot.send_message(message.from_user.id, f"Используйте кнопки",
                                                          reply_markup=keyboard_settings.create_keyboard(4))
                         list_delete_usr_set_upd.append(del_msg.message_id)
 
@@ -754,6 +847,7 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                 user_settings_status = 1
                 logger_(message.from_user.id, f"file: handlers/user_settings_update_4 /// {ex}")
 
+            data_base.update_data_(column_="params_user", data_updating=json.dumps(params_user))
             await state.update_data(list_delete_usr_set_upd=list_delete_usr_set_upd)
 
     if user_settings_status == 1:
@@ -776,7 +870,6 @@ async def replay_questions(message: types.Message):
         await bot.delete_message(message.chat.id, message.message_id)
 
     else:
-
         await bot.delete_message(message.chat.id, message.message_id)
 
         del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict[f'replay_word']}",
