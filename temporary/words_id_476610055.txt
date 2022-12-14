@@ -1,0 +1,13 @@
+Не отслеживаетсья - Untracked
+Отслеживается - Tracked
+Требования - Requirements
+Источник - Source
+Требуется - Required
+Ответ - Response
+Слияние - Merge
+Решать - Solve
+Избегание - Avoiding
+Логично - Logically
+Перечислить - Enumerate
+Продвинутый - Advanced
+Десятилетия - Decades

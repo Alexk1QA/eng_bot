@@ -172,3 +172,63 @@ Traceback (most recent call last):
   File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/bot/api.py", line 111, in check_result
     raise exceptions.RetryAfter(parameters.retry_after)
 aiogram.utils.exceptions.RetryAfter: Flood control exceeded. Retry in 5 seconds.
+Traceback (most recent call last):
+  File "/home/ubuntu/eng_bot/main.py", line 1, in <module>
+    from aiogram.utils import executor
+ModuleNotFoundError: No module named 'aiogram'
+Traceback (most recent call last):
+  File "/home/ubuntu/eng_bot/main.py", line 1, in <module>
+    from aiogram.utils import executor
+ModuleNotFoundError: No module named 'aiogram'
+Traceback (most recent call last):
+  File "/home/ubuntu/eng_bot/main.py", line 1, in <module>
+    from aiogram.utils import executor
+ModuleNotFoundError: No module named 'aiogram'
+Updates were skipped successfully.
+Task exception was never retrieved
+future: <Task finished name='Task-9' coro=<Dispatcher._process_polling_updates() done, defined at /home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:407> exception=KeyError('param_questions')>
+Traceback (most recent call last):
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 415, in _process_polling_updates
+    for responses in itertools.chain.from_iterable(await self.process_updates(updates, fast)):
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 235, in process_updates
+    return await asyncio.gather(*tasks)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/handler.py", line 116, in notify
+    response = await handler_obj.handler(*args, **partial_data)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 256, in process_update
+    return await self.message_handlers.notify(update.message)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/handler.py", line 116, in notify
+    response = await handler_obj.handler(*args, **partial_data)
+  File "/home/ubuntu/eng_bot/handler/handlers.py", line 375, in question_test
+    param_questions = int(state_data["param_questions"])
+KeyError: 'param_questions'
+Cause exception while getting updates.
+Traceback (most recent call last):
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 381, in start_polling
+    updates = await self.bot.get_updates(
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/bot/bot.py", line 110, in get_updates
+    result = await self.request(api.Methods.GET_UPDATES, payload)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/bot/base.py", line 231, in request
+    return await api.make_request(await self.get_session(), self.server, self.__token, method, data, files,
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/bot/api.py", line 140, in make_request
+    return check_result(method, response.content_type, response.status, await response.text())
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/bot/api.py", line 111, in check_result
+    raise exceptions.RetryAfter(parameters.retry_after)
+aiogram.utils.exceptions.RetryAfter: Flood control exceeded. Retry in 5 seconds.
+Task exception was never retrieved
+future: <Task finished name='Task-1112' coro=<Dispatcher._process_polling_updates() done, defined at /home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py:407> exception=OperationalError('no such table: id_532135878')>
+Traceback (most recent call last):
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 415, in _process_polling_updates
+    for responses in itertools.chain.from_iterable(await self.process_updates(updates, fast)):
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 235, in process_updates
+    return await asyncio.gather(*tasks)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/handler.py", line 116, in notify
+    response = await handler_obj.handler(*args, **partial_data)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/dispatcher.py", line 256, in process_update
+    return await self.message_handlers.notify(update.message)
+  File "/home/ubuntu/eng_bot/venv/lib/python3.10/site-packages/aiogram/dispatcher/handler.py", line 116, in notify
+    response = await handler_obj.handler(*args, **partial_data)
+  File "/home/ubuntu/eng_bot/handler/handlers.py", line 19, in add_word
+    mode_questions = json.loads(data_base.select_data_(
+  File "/home/ubuntu/eng_bot/DB/db2.py", line 127, in select_data_
+    cursor.execute(f"""SELECT {column_} FROM {self.id_user} WHERE {where_clmn} = '{where_data}' """)
+sqlite3.OperationalError: no such table: id_532135878
