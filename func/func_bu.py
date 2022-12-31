@@ -2,7 +2,7 @@ from keyboard.keyboard_bu_inline import *
 from DB import db2
 
 
-def message_(list_, word_=None):
+def message_(list_: list, word_: str = None) -> str:
     """ Function for generating a list message with incorrect words """
     # Input example: - [['d2', 'd'], 'ee']] /// ['d2', 'd'] - pair word from DB /// 'ee' - answered our user
 
@@ -41,7 +41,7 @@ def message_(list_, word_=None):
         return message_out
 
 
-def chose_random_(user_id):
+def chose_random_(user_id: int) -> list:
     """ This function generates a list after the user enters the settings for the test output
         actual_dict_param gives the values:
         1 - last week, 2 - all time, 3 - rus --> eng, 4 - eng --> rus """
@@ -56,7 +56,7 @@ def chose_random_(user_id):
     return actual_dict_param
 
 
-def random_question(method_, user_id, mode_func=None):
+def random_question(method_: str, user_id: int, mode_func: str = None) -> [None, list]:
     # Input example: "word", message.from_user.id, 0
 
     period_and_EN_or_RUS = chose_random_(user_id)
@@ -89,3 +89,20 @@ def random_question(method_, user_id, mode_func=None):
                 random_from_all = data_base.select_data_(method_1=method_, pairs_all_or_one="one")
                 return [int(period_and_EN_or_RUS[1]), random_from_all]
                 # Output: [3, [['Яблоко', 'Apple']]
+
+
+def check_word_phrase_replay(mode: str, user_id: int, list_asked_data: list, len_data: int) -> list:
+
+    while True:
+        data_ = random_question(mode, user_id)
+
+        if len_data == len(list_asked_data):
+            list_asked_data.clear()
+            break
+
+        if data_[1][0] in list_asked_data:
+            pass
+        else:
+            break
+
+    return data_

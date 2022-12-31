@@ -1,8 +1,8 @@
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
-from keyboard.buttons_menu import *
 from message.message_handlers import *
 from aiogram import types, Dispatcher
+from keyboard.buttons_menu import *
 from log.logging import logger_
 from keyboard.keyboard import *
 from state.states import *
@@ -17,7 +17,7 @@ async def add_word(message: types.Message, state: FSMContext):
     data_base = db2.DB(message.from_user.id)
 
     mode_questions = json.loads(data_base.select_data_(
-                               column_="params_user", where_clmn="id", where_data=1)[0][0])["mode_questions"]
+        column_="params_user", where_clmn="id", where_data=1)[0][0])["mode_questions"]
 
     await state.update_data(mode_questions=mode_questions)
 
@@ -37,7 +37,7 @@ async def add_word(message: types.Message, state: FSMContext):
     keyboard_cancel = Keyboard(["Отмена ->"])
 
     mode_add_word = json.loads(data_base.select_data_(
-                                column_="params_user", where_clmn="id", where_data=1)[0][0])["mode_add_word"]
+        column_="params_user", where_clmn="id", where_data=1)[0][0])["mode_add_word"]
     await state.update_data(mode_add_word=mode_add_word)
 
     del_msg_1 = 0
@@ -71,6 +71,8 @@ async def add_word_first(message: types.Message, state: FSMContext):
 
     answer = message.text
 
+    data_base = db2.DB(message.from_user.id)
+
     if answer == "Отмена ->" or answer == "Готово ->":
         await bot.delete_message(message.chat.id, message.message_id)
 
@@ -95,9 +97,6 @@ async def add_word_first(message: types.Message, state: FSMContext):
         mode_questions = state_data["mode_questions"]
         # example -> eng
 
-        # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-        data_base = db2.DB(message.from_user.id)
-
         try:
             search_para = data_base.select_data_(method_1=method_add_data,
                                                  method_2=mode_questions, where_data=answer, output_para="on")
@@ -109,8 +108,6 @@ async def add_word_first(message: types.Message, state: FSMContext):
 
         except Exception as ex:
             logger_(message.from_user.id, f"file: handlers/add_word_quit_2 /// {ex}")
-
-        # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
         list_delete.append(message.message_id)
 
@@ -334,11 +331,14 @@ async def start_test(message: types.Message, state: FSMContext):
         await state.update_data(param_percent=int(json.loads(data_base.select_data_(
                                 column_="params_user", where_clmn="id", where_data=1)[0][0])["param_percent"]))
 
+        await state.update_data(len_data=len_data)
+
         await state.update_data(count_fails=0)
         await state.update_data(count_questions=0)
         await state.update_data(status_=0)
         await state.update_data(temp_method=answer)
         await state.update_data(list_fails=[])
+        await state.update_data(list_asked_data=[])
 
         await bot.delete_message(message.chat.id, message.message_id)
 
@@ -379,6 +379,8 @@ async def question_test(message: types.Message, state: FSMContext):
     status_ = int(state_data["status_"])
 
     temp_method = state_data["temp_method"]
+    list_asked_data = state_data["list_asked_data"]
+    len_data = state_data["len_data"]
 
     match answer:
         case "Назад ->":
@@ -489,11 +491,11 @@ async def question_test(message: types.Message, state: FSMContext):
         list_delete = state_data["list_delete"]
         match temp_method:
             case "Пройти тест: слова ->":
-                data_ = random_question("word", message.from_user.id)
 
-        # # --- --- --- --- --- --- --- --- ---  Location  for  checking words from replay mode --- --- --- --- --- ---
-        # # --- --- --- --- --- --- --- --- --- --- --- --- ---  Soon   --- --- --- --- --- --- --- --- --- --- --- ---
-        # #                                                   Check data_
+                data_ = check_word_phrase_replay("word", message.from_user.id, list_asked_data, len_data)
+
+                list_asked_data.append(data_[1][0])
+                await state.update_data(list_asked_data=list_asked_data)
 
                 match data_:
                     case None:
@@ -539,7 +541,11 @@ async def question_test(message: types.Message, state: FSMContext):
                                 await QuestionParams.question_test.set()
 
             case "Пройти тест: фразы ->":
-                data_ = random_question("phrase", message.from_user.id)
+
+                data_ = check_word_phrase_replay("phrase", message.from_user.id, list_asked_data, len_data)
+
+                list_asked_data.append(data_[1][0])
+                await state.update_data(list_asked_data=list_asked_data)
 
                 match data_[0]:
                     case int(3):
@@ -596,13 +602,15 @@ async def user_settings(message: types.Message, state: FSMContext):
     len_dict_phrase = 0
 
     try:
-        len_dict_word = len(data_base.select_data_(column_="word_rus", all_="on"))
+        len_dict_word = len(data_base.select_data_(column_=None))
+
+        # len_dict_word = len(data_base.select_data_(column_="word_rus", all_="on"))
         len_dict_phrase = len(data_base.select_data_(column_="phrase_rus", all_="on"))
     except Exception as ex:
         logger_(message.from_user.id, f"file: handlers/user_settings /// {ex}")
 
     params_user = json.loads(data_base.select_data_(
-                             column_="params_user", where_clmn="id", where_data=1)[0][0])
+        column_="params_user", where_clmn="id", where_data=1)[0][0])
 
     mode_questions = params_user["mode_questions"]
 
@@ -620,16 +628,16 @@ async def user_settings(message: types.Message, state: FSMContext):
             mode_add_word = "Автоматический"
 
     del_msg = await bot.send_message(message.from_user.id, f"{handlers_dict[f'user_settings']}\n\n"
-                                     f"Количество вопросов: "
-                                     f"{params_user['param_questions']}\n"
-                                     f"Процент ошибок: "
-                                     f"{params_user['param_percent']}%\n"
-                                     f"Ручной период для теста: "
-                                     f"{params_user['param_day']} дней\n"
-                                     f"Порядок добавления слов: {mode_questions}\n"
-                                     f"Режим добавления слов: {mode_add_word}\n\n"
-                                     f"Всего слов добавлено: {len_dict_word}\n"
-                                     f"Всего фраз добавлено: {len_dict_phrase}\n",
+                                                           f"Количество вопросов: "
+                                                           f"{params_user['param_questions']}\n"
+                                                           f"Процент ошибок: "
+                                                           f"{params_user['param_percent']}%\n"
+                                                           f"Ручной период для теста: "
+                                                           f"{params_user['param_day']} дней\n"
+                                                           f"Порядок добавления слов: {mode_questions}\n"
+                                                           f"Режим добавления слов: {mode_add_word}\n\n"
+                                                           f"Всего слов добавлено: {len_dict_word}\n"
+                                                           f"Всего фраз добавлено: {len_dict_phrase}\n",
                                      reply_markup=keyboard_settings.create_keyboard(4))
 
     await state.update_data(list_delete_usr_set_upd=[del_msg.message_id])
@@ -644,7 +652,7 @@ async def user_settings_update(message: types.Message, state: FSMContext):
     data_base = db2.DB(message.from_user.id)
 
     params_user = json.loads(data_base.select_data_(
-                               column_="params_user", where_clmn="id", where_data=1)[0][0])
+        column_="params_user", where_clmn="id", where_data=1)[0][0])
 
     state_data = await state.get_data()
 

@@ -3,7 +3,7 @@ from DB import db2
 import json
 
 
-def update_keyboard_secondary(button, dict_, user_id):
+def update_keyboard_secondary(button: int, dict_: dict, user_id: int):
     """ Additional function for dynamically changing inline buttons
         Here we overwrite the second dictionary """
 
@@ -42,7 +42,7 @@ def update_keyboard_secondary(button, dict_, user_id):
                   column_="keyboard_boot", where_clmn="id", where_data=2, data_updating=json.dumps(butt_dict_1_1))
 
 
-def update_keyboard_main(button, user_id):
+def update_keyboard_main(button: int, user_id: int):
     """ Additional function for dynamically changing the inline buttons """
 
     data_base = db2.DB(user_id)
@@ -65,7 +65,7 @@ def update_keyboard_main(button, user_id):
         return keyboard_choose(user_id)
 
 
-def keyboard_choose(user_id):
+def keyboard_choose(user_id: int):
     """ Function for dynamically changing the inline buttons in manual parameter selection mode """
 
     data_base = db2.DB(user_id)
@@ -100,7 +100,7 @@ def keyboard_choose(user_id):
         return inline_keyboard_choose
 
 
-def keyboard_choose_replay(method_, user_id):
+def keyboard_choose_replay(method_: str, user_id: int):
     """ Function for dynamically changing the inline buttons in manual parameter selection mode """
 
     data_base = db2.DB(user_id)
@@ -139,7 +139,7 @@ def keyboard_choose_replay(method_, user_id):
         return inline_keyboard_choose_2
 
 
-def delete_accept(user_id, mode_):
+def delete_accept(user_id: int, mode_: str):
 
     data_base = db2.DB(user_id)
     word = data_base.select_data_(column_="temp_data", where_clmn="id", where_data=1)

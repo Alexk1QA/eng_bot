@@ -53,7 +53,7 @@ class DB:
 
             else:
                 cursor.execute(
-                    f"INSERT INTO {self.id_user} ( keyboard_boot)"
+                    f"INSERT INTO {self.id_user} (keyboard_boot)"
                     f"VALUES ( ? )", [items])
                 connect.commit()
 
