@@ -602,9 +602,7 @@ async def user_settings(message: types.Message, state: FSMContext):
     len_dict_phrase = 0
 
     try:
-        len_dict_word = len(data_base.select_data_(column_=None))
-
-        # len_dict_word = len(data_base.select_data_(column_="word_rus", all_="on"))
+        len_dict_word = len(data_base.select_data_(column_="word_rus", all_="on"))
         len_dict_phrase = len(data_base.select_data_(column_="phrase_rus", all_="on"))
     except Exception as ex:
         logger_(message.from_user.id, f"file: handlers/user_settings /// {ex}")
