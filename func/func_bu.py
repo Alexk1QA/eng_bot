@@ -22,7 +22,6 @@ def message_(list_: [list, dict], word_: str = None, only_active_group: str = No
             else:
 
                 if len_word_in_groups == "on":
-                    print(i[0])
                     if i[0] == "All":
                         pass
                     else:
