@@ -108,7 +108,7 @@ def random_question(method_: str, user_id: int, mode_func: str = None):
         if mode_func == "download":
             random_from_all = data_base.select_data_(method_1=method_, pairs_all_or_one="all")
             # with open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{user_id}.txt', 'w') as file:
-                with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
+            with open(f'/home/ubuntu/eng_bot/temporary/words_id_{user_id}.txt', 'w') as file:
 
                 return file.writelines(f'{row[1]} - {row[0]}\n' for row in random_from_all)
 

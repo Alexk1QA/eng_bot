@@ -44,8 +44,6 @@ async def user_settings(message: types.Message, state: FSMContext):
         case "auto":
             mode_add_word = "Автоматический"
 
-    test = 0
-
     user_group_ = user_group(message.from_user.id, mode="read_only")["user_group"]
 
     msg = message_(user_group_[f"dict_{user_group_['status']}"], len_word_in_groups="on", user_id=message.from_user.id)
@@ -181,7 +179,6 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                     user_group_ = user_group(message.from_user.id, mode="read_only")["user_group"]
 
                     msg = message_(user_group_[f"dict_{user_group_['status']}"])
-                    a = 0
 
                     del_msg = await bot.send_message(message.from_user.id,
                                                      f"Вот список Ваших групп : {msg}"
@@ -201,7 +198,7 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                     try:
                         random_question("word", message.from_user.id, mode_func="download")
 
-                        # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
+            # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
                         doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
                         del_msg = await bot.send_document(message.from_user.id, doc)
                         list_delete_usr_set_upd.append(del_msg.message_id)
@@ -216,7 +213,7 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                 elif answer == buttons_settings_menu[7]:
                     try:
                         random_question("phrase", message.from_user.id, mode_func="download")
-                        # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/'f'words_id_{message.from_user.id}.txt')
+            # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/'f'words_id_{message.from_user.id}.txt')
                         doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
                         del_msg = await bot.send_document(message.from_user.id, doc)
                         list_delete_usr_set_upd.append(del_msg.message_id)
