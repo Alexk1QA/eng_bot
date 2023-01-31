@@ -29,6 +29,11 @@ async def start(message: types.Message):
         data_base.create_table()
 
         try:
+            await delete_message_main(message.from_user.id, [])
+        except Exception as ex:
+            logger_(message.from_user.id, f"file: handlers_command/start /// {ex}")
+
+        try:
             check = int(data_base.select_data_(column_="keyboard_boot")[0][0])
 
             if check == 0 or check == 1:
