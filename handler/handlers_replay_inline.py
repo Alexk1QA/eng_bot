@@ -1,11 +1,7 @@
-from handler.handlers import delete_message
 from aiogram.dispatcher import FSMContext
-from keyboard.keyboard_bu_inline import *
 from aiogram.types import CallbackQuery
-from message.message_handlers import *
-from aiogram import types, Dispatcher
+from handler.handlers import *
 from state.states import *
-from bot_init import bot
 
 
 async def manual(call: CallbackQuery):
@@ -18,6 +14,21 @@ async def manual(call: CallbackQuery):
     await bot.answer_callback_query(call.id, text='✅')
 
 
+async def user_group_change(call: CallbackQuery):
+    # Change keyboard user_group for test mode
+
+    numb_button = int(call.data[-1])
+
+    try:
+
+        await call.message.edit_reply_markup(user_group(call.message.chat.id, mode="write", callback_data=numb_button))
+
+        await bot.answer_callback_query(call.id, text='✅')
+    except Exception as ex:
+        logger_(call.message.chat.id, f"file: handlers/delete_message/ call_func - user_group_change /// {ex}")
+        await bot.answer_callback_query(call.id, text='Данная группа уже включена ✅')
+
+
 async def replay_questions(call: CallbackQuery, state: FSMContext):
     # Change word for replay mode
 
@@ -27,12 +38,11 @@ async def replay_questions(call: CallbackQuery, state: FSMContext):
     len_items_in_DB = len(data_base.select_data_(column_="word_eng", all_="on"))
 
     match numb_button:
-
         case 1:
             # Button Change pair words (end-rus)
 
             if len_items_in_DB == 0:
-                await bot.answer_callback_query(call.id, text=f"Вы удалили все слова")
+                await bot.answer_callback_query(call.id, text=f"В данной группе нет слов")
 
             else:
                 await bot.answer_callback_query(call.id, text='✅')
@@ -72,7 +82,6 @@ async def replay_questions(call: CallbackQuery, state: FSMContext):
 
         case 5:
             # Button No from delete word
-
             if len_items_in_DB == 0:
                 await bot.answer_callback_query(call.id, text=f"Вы удалили все слова")
 
@@ -107,14 +116,12 @@ async def update_word(message: types.Message, state: FSMContext):
     word = data_base.select_data_(column_="temp_data", where_clmn="id", where_data=1)
 
     match method_:
-
         case "eng":
             word = word[0][0].split(" ")[0]
 
         case "rus":
             word = word[0][0].split(" ")[-1]
 
-    # data_base.update_data_for_user(word, answer, method_)
     data_base.update_data_(method_=method_, where_data=word, data_updating=answer)
 
     await delete_message(
@@ -133,6 +140,8 @@ async def update_word(message: types.Message, state: FSMContext):
         await delete_message(message.from_user.id, [data_base.select_data_(column_='temp_data', where_clmn="id",
                                                                            where_data=4)[0][0]])
 
+        await delete_message_main(message.from_user.id, [del_msg.message_id], mode="")
+
     else:
         data_base.update_data_(column_="temp_data", where_data=4, data_updating=del_msg.message_id)
         data_base.update_data_(column_="temp_data", where_data=5, data_updating=0)
@@ -140,10 +149,14 @@ async def update_word(message: types.Message, state: FSMContext):
         await delete_message(message.from_user.id, [data_base.select_data_(column_='temp_data', where_clmn="id",
                                                                            where_data=3)[0][0]])
 
+        await delete_message_main(message.from_user.id, [del_msg.message_id], mode="")
+
     await state.finish()
 
 
 def register_handler_command_bu_inline(dp: Dispatcher):
-    dp.register_callback_query_handler(manual, lambda c: c.data.startswith('inline'))
-    dp.register_callback_query_handler(replay_questions, lambda c: c.data.startswith('replay'))
+    dp.register_callback_query_handler(manual, lambda call: call.data.startswith('inline'))
+    dp.register_callback_query_handler(replay_questions, lambda call: call.data.startswith('replay'))
+    dp.register_callback_query_handler(user_group_change, lambda call: call.data.startswith('user_group'))
+
     dp.register_message_handler(update_word, state=QuestionParams.update_word)
