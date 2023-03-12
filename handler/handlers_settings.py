@@ -99,7 +99,11 @@ async def user_settings_update(message: types.Message, state: FSMContext):
         del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                               reply_markup=keyboard_start.create_keyboard(3))
 
-        await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                         reply_markup=user_group(message.from_user.id, mode="read"))
+
+        await delete_message_main(message.from_user.id, [del_msg_main.message_id,
+                                                         del_msg.message_id])
 
         finally_state_data = await state.get_data()
 
@@ -117,7 +121,11 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                     del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                                           reply_markup=keyboard_start.create_keyboard(3))
 
-                    await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+                    del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                                     reply_markup=user_group(message.from_user.id, mode="read"))
+
+                    await delete_message_main(message.from_user.id, [del_msg_main.message_id,
+                                                                     del_msg.message_id])
 
                     finally_state_data = await state.get_data()
 
@@ -198,8 +206,9 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                     try:
                         random_question("word", message.from_user.id, mode_func="download")
 
-            # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
-                        doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
+                        doc = open(
+                            f'/Users/macbook/Desktop/english_bot_test/temporary/words_id_{message.from_user.id}.txt')
+                        # doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
                         del_msg = await bot.send_document(message.from_user.id, doc)
                         list_delete_usr_set_upd.append(del_msg.message_id)
                         await bot.delete_message(message.chat.id, message.message_id)
@@ -213,8 +222,9 @@ async def user_settings_update(message: types.Message, state: FSMContext):
                 elif answer == buttons_settings_menu[7]:
                     try:
                         random_question("phrase", message.from_user.id, mode_func="download")
-            # doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/'f'words_id_{message.from_user.id}.txt')
-                        doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
+                        doc = open(f'/Users/macbook/Desktop/english_bot_test/temporary/'
+                                   f'words_id_{message.from_user.id}.txt')
+                        # doc = open(f'/home/ubuntu/eng_bot/temporary/words_id_{message.from_user.id}.txt')
                         del_msg = await bot.send_document(message.from_user.id, doc)
                         list_delete_usr_set_upd.append(del_msg.message_id)
                         await bot.delete_message(message.chat.id, message.message_id)

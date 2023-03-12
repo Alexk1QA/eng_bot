@@ -16,22 +16,31 @@ async def start(message: types.Message):
 
         del_msg_main = await bot.send_message(message.from_user.id, f"{message_handlers.handlers_dict['start']}",
                                               reply_markup=keyboard_start.create_keyboard(3))
-        data_base.update_data_(column_="params_user", where_data=2,
-                               data_updating=json.dumps({"list_delete": [del_msg_main.message_id]}))
 
+        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                         reply_markup=user_group(message.from_user.id, mode="read"))
+
+        data_base.update_data_(column_="params_user", where_data=2,
+                               data_updating=json.dumps({"list_delete": [del_msg_main.message_id,
+                                                                         del_msg.message_id]}))
     else:
         await bot.send_message(message.from_user.id, f"English Bot 🇬🇧")
 
         del_msg_main = await bot.send_message(message.from_user.id, f"{message_handlers.handlers_dict['start']}",
                                               reply_markup=keyboard_start.create_keyboard(3))
+
+        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                         reply_markup=user_group(message.from_user.id, mode="read"))
+
         await bot.delete_message(message.chat.id, message.message_id)
 
         data_base.create_table()
 
         try:
             await delete_message_main(message.from_user.id, [])
+
         except Exception as ex:
-            logger_(message.from_user.id, f"file: handlers_command/start /// {ex}")
+            print(ex)
 
         try:
             check = int(data_base.select_data_(column_="keyboard_boot")[0][0])
@@ -82,7 +91,8 @@ async def start(message: types.Message):
                                       json.dumps(dict(message.from_user)))
 
         data_base.update_data_(column_="params_user", where_data=2,
-                               data_updating=json.dumps({"list_delete": [del_msg_main.message_id]}))
+                               data_updating=json.dumps({"list_delete": [del_msg_main.message_id,
+                                                                         del_msg.message_id]}))
         data_base.update_data_(column_="params_user", where_data=3,
                                data_updating=json.dumps({"list_delete": []}))
 

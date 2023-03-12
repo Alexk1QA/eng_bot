@@ -69,14 +69,13 @@ async def start_test(message: types.Message, state: FSMContext):
                                                                f"{round(middle_percent, 2)}%",
                                          reply_markup=keyboard_start_test.create_keyboard(3))
 
-        del_msg_2 = await bot.send_message(message.from_user.id, f"Укажите группу из которой делать выборку слов",
-                                           reply_markup=user_group(message.from_user.id, mode="read"))
+        # del_msg_2 = await bot.send_message(message.from_user.id, f"Укажите группу из которой делать выборку слов",
+        #                                    reply_markup=user_group(message.from_user.id, mode="read"))
 
         del_msg_3 = await bot.send_message(message.from_user.id, f"{handlers_dict[f'start_test_word_2']}",
                                            reply_markup=keyboard_choose(message.from_user.id))
 
-        await state.update_data(list_delete=[message.message_id, del_msg.message_id, del_msg_2.message_id,
-                                             del_msg_3.message_id])
+        await state.update_data(list_delete=[message.message_id, del_msg.message_id, del_msg_3.message_id])
 
 
 async def question_test(message: types.Message, state: FSMContext):
@@ -205,13 +204,15 @@ async def question_test(message: types.Message, state: FSMContext):
 
         match answer:
             case "Назад ->":
-
                 keyboard_start = Keyboard(buttons_main_menu)
 
                 del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                                       reply_markup=keyboard_start.create_keyboard(3))
 
-                await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+                del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                                 reply_markup=user_group(message.from_user.id, mode="read"))
+
+                await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id])
 
                 finally_state_data = await state.get_data()
 
@@ -221,13 +222,16 @@ async def question_test(message: types.Message, state: FSMContext):
                 await state.finish()
 
             case _:
-
                 keyboard_start = Keyboard(buttons_main_menu)
 
                 del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                                       reply_markup=keyboard_start.create_keyboard(3))
 
-                await delete_message_main(message.from_user.id, [del_msg_main.message_id], del_pause_3="pause")
+                del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                                 reply_markup=user_group(message.from_user.id, mode="read"))
+
+                await delete_message_main(message.from_user.id, [del_msg_main.message_id,
+                                                                 del_msg.message_id], del_pause_3="pause")
 
                 finally_state_data = await state.get_data()
 

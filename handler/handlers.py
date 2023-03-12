@@ -33,8 +33,8 @@ async def replay_questions(message: types.Message):
         del_msg_main = await bot.send_message(message.from_user.id, f"Режим повторения",
                                               reply_markup=keyboard_stop.create_keyboard(1))
 
-        del_msg_2 = await bot.send_message(message.from_user.id, f"Укажите группу из которой делать выборку слов",
-                                           reply_markup=user_group(message.from_user.id, mode="read"))
+        # del_msg_2 = await bot.send_message(message.from_user.id, f"Укажите группу из которой делать выборку слов",
+        #                                    reply_markup=user_group(message.from_user.id, mode="read"))
         try:
             keyboard_choose_replay_ = keyboard_choose_replay("word", message.from_user.id)
             if keyboard_choose_replay_ is None:
@@ -44,8 +44,7 @@ async def replay_questions(message: types.Message):
         except ValueError:
             del_msg = await bot.send_message(message.from_user.id, f"В данной группе нет ни одного слова")
 
-        await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id,
-                                                         del_msg_2.message_id], mode="")
+        await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id], mode="")
 
         data_base.update_data_(column_="temp_data", where_data=2, data_updating=del_msg.message_id)
         data_base.update_data_(column_="temp_data", where_data=5, data_updating=0)
@@ -61,7 +60,11 @@ async def def_finished(message: types.Message):
 
     del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                           reply_markup=keyboard_start.create_keyboard(3))
-    await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+
+    del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                     reply_markup=user_group(message.from_user.id, mode="read"))
+
+    await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id])
 
 
 async def delete_message_main(user_id: int, new_id_msg: list, mode: str = "del", where_data_add: int = 2,

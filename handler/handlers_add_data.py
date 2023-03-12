@@ -1,4 +1,3 @@
-import time
 
 from aiogram.dispatcher import FSMContext
 from handler.handlers import *
@@ -80,7 +79,10 @@ async def add_word_first(message: types.Message, state: FSMContext):
         del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                               reply_markup=keyboard_start.create_keyboard(3))
 
-        await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                         reply_markup=user_group(message.from_user.id, mode="read"))
+
+        await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id])
 
         finally_state_data = await state.get_data()
 
@@ -152,7 +154,10 @@ async def add_word_last(message: types.Message, state: FSMContext):
         del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                               reply_markup=keyboard_start.create_keyboard(3))
 
-        await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                         reply_markup=user_group(message.from_user.id, mode="read"))
+
+        await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id])
 
         finally_state_data = await state.get_data()
 
@@ -258,7 +263,10 @@ async def add_word_quit(message: types.Message, state: FSMContext):
             del_msg_main = await bot.send_message(message.from_user.id, f"{handlers_dict['start']}",
                                                   reply_markup=keyboard_start.create_keyboard(3))
 
-            await delete_message_main(message.from_user.id, [del_msg_main.message_id])
+            del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                             reply_markup=user_group(message.from_user.id, mode="read"))
+
+            await delete_message_main(message.from_user.id, [del_msg_main.message_id, del_msg.message_id])
 
             finally_state_data = await state.get_data()
 
