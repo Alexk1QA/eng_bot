@@ -29,9 +29,6 @@ async def start(message: types.Message):
         del_msg_main = await bot.send_message(message.from_user.id, f"{message_handlers.handlers_dict['start']}",
                                               reply_markup=keyboard_start.create_keyboard(3))
 
-        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
-                                         reply_markup=user_group(message.from_user.id, mode="read"))
-
         await bot.delete_message(message.chat.id, message.message_id)
 
         data_base.create_table()
@@ -89,6 +86,9 @@ async def start(message: types.Message):
 
             data_base.insert_settings(params_user, status_, butt_dict, butt_dict_upd,
                                       json.dumps(dict(message.from_user)))
+
+        del_msg = await bot.send_message(message.from_user.id, f"Выберите группу для работы с ней",
+                                         reply_markup=user_group(message.from_user.id, mode="read"))
 
         data_base.update_data_(column_="params_user", where_data=2,
                                data_updating=json.dumps({"list_delete": [del_msg_main.message_id,
