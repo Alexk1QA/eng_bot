@@ -47,7 +47,7 @@ class DB:
         for i in user_group[f"dict_{user_group['status']}"].items():
             if i[1] == "✅":
                 if i[0] == "All":
-                    pass
+                    return "All"
                 else:
                     user_group_ = i[0]
 
